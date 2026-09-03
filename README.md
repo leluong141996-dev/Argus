@@ -81,30 +81,38 @@ The target repository is synthetic but the task is real-shaped: a cross-cutting 
 
 The leaderboard number answers *which model wins*. It doesn't answer *why*. Every run writes one record per case/model pair with the fields that make debugging and reruns possible:
 
+Scoring is pipeline-style rather than one flat number — each row breaks the answer down by stage (`retrieval`, `reasoning`, `action_selection`, `safety`, plus the runner-owned `cost` and `latency`), so a row shows not just *that* a model failed but *at which stage*:
+
 ```json
 {
-  "case_id": "argus-reason-0417",
+  "case_id": "reasoning-commute-001",
   "task": "agent_reasoning",
   "model": "provider/model-name",
   "provider": "provider-name",
-  "score": 0.62,
-  "score_cap_applied": true,
-  "failure_tags": ["cite_all_evidence", "unsupported_claim"],
-  "raw_output": "...",
-  "parsed_output": { "...": "..." },
-  "tokens_in": 1834,
-  "tokens_out": 412,
-  "latency_ms": 2140,
-  "judge_latency_ms": null,
-  "skip_reason": null,
-  "resolved_config": { "...": "..." },
-  "seed": 7,
-  "run_id": "2026-09-03T10-22-00Z",
-  "harness_version": "0.3.0"
+  "stages": {
+    "retrieval": { "score": 0.3, "passed": false, "weight": 1.0, "tags": ["cite_all_evidence"], "details": { "cite_ratio": 1.0 } },
+    "reasoning": { "score": 1.0, "passed": true, "weight": 1.0, "tags": [], "details": {} },
+    "action_selection": { "score": 1.0, "passed": true, "weight": 1.0, "tags": [], "details": {} },
+    "safety": { "score": 1.0, "passed": true, "weight": 1.0, "tags": [], "details": {} },
+    "cost": { "score": 1.0, "passed": true, "weight": 0.0, "tags": [], "details": { "cost_usd": 0.000212, "budget_usd": null } },
+    "latency": { "score": 1.0, "passed": true, "weight": 0.0, "tags": [], "details": { "latency_ms": 4.1, "budget_ms": null } }
+  },
+  "capped_by": "retrieval",
+  "legacy_score": 0.825,
+  "failure_tags": ["cite_all_evidence"],
+  "tokens_in": 41,
+  "tokens_out": 21,
+  "latency_ms": 4.1,
+  "run_id": "demo-run",
+  "seed": null,
+  "resolved_config": {},
+  "skip_reason": null
 }
 ```
 
-Model summaries (dashboard-ready aggregates) are derived from these rows, never the other way around — the row is the source of truth.
+`legacy_score` is a derived convenience rollup for tools that still want one number — it is never the row's ground truth. `capped_by` names the exact stage that decided the row's fate, so "why did this model lose" is a lookup, not a guess. See [`docs/pipeline-scoring.md`](./docs/pipeline-scoring.md) for the full design.
+
+Model summaries (dashboard-ready aggregates) are derived from these rows, never the other way around — the row is the source of truth. Aggregation stays at the `(task, model, stage)` level too; see `dashboards/aggregate.py`.
 
 ## What ARGUS is *not*
 
@@ -116,23 +124,37 @@ Model summaries (dashboard-ready aggregates) are derived from these rows, never 
 
 ```
 argus/
-├── configs/                  # YAML: providers, models, task settings, judge, output
+├── configs/                    # YAML: providers, models, task settings, judge, output
 ├── core/
-│   ├── runner.py              # loads cases, checks modality/API support, dispatches to plugins
-│   ├── record_schema.py       # row-level record + model summary schema
-│   └── providers/             # model provider adapters
+│   ├── runner.py                # loads cases, checks modality/API support, dispatches to plugins
+│   ├── pipeline.py               # Stage enum, StageResult, PipelineScore
+│   ├── cost.py                   # runner-owned COST stage (token pricing)
+│   ├── latency.py                # runner-owned LATENCY stage (wall-clock budget)
+│   ├── record_schema.py         # row-level record schema (pipeline is the source of truth)
+│   └── providers/                # model provider adapters
 ├── plugins/
+│   ├── base.py                   # TaskPlugin contract: generate() + score() per declared stage
 │   ├── query_generation/
 │   ├── tool_use/
 │   ├── multimodal_matching/
-│   ├── agent_reasoning/
+│   ├── agent_reasoning/          # reference pipeline-scoring implementation
+│   │   ├── ontology.py            # claims / actions / sensitive-claim contract
+│   │   ├── cases.py               # synthetic demo cases
+│   │   └── plugin.py              # retrieval / reasoning / action_selection / safety stages
 │   └── agentic_coding/
 ├── datasets/
-│   ├── teaching/               # public examples, contracts, canaries
-│   └── certification/          # hidden splits, access-controlled
-├── baselines/                  # shortcut baselines per task
-├── gates/                      # oracle / weak-baseline / redaction / canary checks
-├── dashboards/                 # aggregation + reporting
+│   ├── teaching/                 # public examples, contracts, canaries
+│   └── certification/            # hidden splits, access-controlled
+├── baselines/                    # shortcut baselines per task
+├── gates/                        # oracle / weak-baseline / redaction / canary checks
+├── dashboards/
+│   └── aggregate.py              # (task, model, stage)-level summaries — never one global score
+├── examples/
+│   └── run_pipeline_demo.py      # runnable, no API key needed
+├── tests/
+│   └── test_pipeline_scoring.py
+├── docs/
+│   └── pipeline-scoring.md       # design write-up for the pipeline-scoring feature
 └── argus-logo.png
 ```
 
@@ -157,7 +179,7 @@ argus report --run-id <run_id>
 
 ## Roadmap
 
-- [ ] Pipeline-style scoring: separate retrieval, reasoning, action selection, latency, cost, and safety instead of scoring only the final answer.
+- [x] Pipeline-style scoring: separate retrieval, reasoning, action selection, latency, cost, and safety instead of scoring only the final answer. See [`docs/pipeline-scoring.md`](./docs/pipeline-scoring.md) and the reference implementation in [`plugins/agent_reasoning/`](./plugins/agent_reasoning/).
 - [ ] More task plugins contributed by the community (RAG faithfulness, multi-turn tool orchestration, long-horizon agent planning).
 - [ ] Standardized canary suite shared across all plugins.
 - [ ] Public dashboard template for reporting task-level results (not a single global leaderboard).
@@ -173,4 +195,4 @@ MIT — see [LICENSE](./LICENSE).
 
 ## Acknowledgments
 
-The core design ideas — task-owned scoring contracts, deterministic-first scoring, shortcut baselines as first-class tests, and the teaching/certification split — are adapted from Grab's engineering write-up on their internal [Grab Bench](https://engineering.grab.com/grab-bench-evaluating-ai) evaluation harness. ARGUS reimplements these ideas as a general-purpose, open-source platform for AI agent evaluation.
+ARGUS treats evaluation as software: task-owned scoring contracts, deterministic-first scoring, shortcut baselines as first-class tests, and a teaching/certification split so shared examples and hidden generalization checks never have to live in the same dataset.

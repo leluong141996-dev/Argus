@@ -1,0 +1,97 @@
+"""Shared execution core.
+
+The runner never scores task logic itself. For each case it:
+  1. calls the plugin's `generate`,
+  2. times it and reads token usage back,
+  3. asks the plugin to score its own task-specific stages,
+  4. appends the runner-owned COST and LATENCY stages,
+  5. writes one RowRecord per case/model pair.
+
+Nothing about retrieval, reasoning, action selection, or safety lives here --
+that stays in the plugin. Adding a new benchmark surface means writing a new
+plugin, not touching this file.
+"""
+
+from __future__ import annotations
+
+import time
+import uuid
+from dataclasses import dataclass
+from typing import Any, Callable
+
+from core.cost import score_cost_stage
+from core.latency import score_latency_stage
+from core.pipeline import PipelineScore, StageResult
+from core.record_schema import RowRecord
+from plugins.base import TaskPlugin
+
+
+@dataclass
+class RunConfig:
+    run_id: str
+    model: str
+    provider: str
+    cost_budget_usd: float | None = None
+    latency_budget_ms: float | None = None
+    seed: int | None = None
+
+
+def run_case(
+    plugin: TaskPlugin,
+    case: dict[str, Any],
+    model_call: Callable[..., Any],
+    config: RunConfig,
+) -> RowRecord:
+    plugin.validate_stages()
+
+    start = time.perf_counter()
+    result = plugin.generate(case, model_call)
+    latency_ms = (time.perf_counter() - start) * 1000
+
+    task_stages = plugin.score(case, result)
+    _validate_stage_coverage(plugin, task_stages)
+
+    cost_stage = score_cost_stage(
+        result.tokens_in,
+        result.tokens_out,
+        model=config.model,
+        budget_usd=config.cost_budget_usd,
+    )
+    latency_stage = score_latency_stage(latency_ms, budget_ms=config.latency_budget_ms)
+
+    all_stages = [*task_stages, cost_stage, latency_stage]
+    capped_by = next((s.stage.value for s in all_stages if not s.passed and s.weight > 0), None)
+
+    pipeline = PipelineScore(stages=all_stages, capped_by=capped_by)
+
+    return RowRecord(
+        case_id=case["case_id"],
+        task=plugin.name,
+        model=config.model,
+        provider=config.provider,
+        pipeline=pipeline,
+        raw_output=result.raw_output,
+        parsed_output=result.parsed_output,
+        tokens_in=result.tokens_in,
+        tokens_out=result.tokens_out,
+        latency_ms=latency_ms,
+        run_id=config.run_id,
+        seed=config.seed,
+    )
+
+
+def _validate_stage_coverage(plugin: TaskPlugin, stages: list[StageResult]) -> None:
+    got = {s.stage for s in stages}
+    expected = set(plugin.STAGES)
+    if got != expected:
+        missing = expected - got
+        unexpected = got - expected
+        raise ValueError(
+            f"{plugin.name}.score() stage mismatch -- "
+            f"missing={sorted(s.value for s in missing)} "
+            f"unexpected={sorted(s.value for s in unexpected)}"
+        )
+
+
+def new_run_id() -> str:
+    return f"run-{uuid.uuid4().hex[:12]}"
