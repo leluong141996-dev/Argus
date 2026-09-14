@@ -17,4 +17,4 @@ server = ["fastapi", "uvicorn"]
 argus = "core.cli:main"
 
 [tool.setuptools]
-packages = ["core", "core.providers", "plugins", "plugins.agent_reasoning", "dashboards", "baselines", "gates"]
+packages = ["core", "core.providers", "plugins", "plugins.agent_reasoning", "dashboards", "baselines", "gates", "server"]

@@ -2,23 +2,15 @@
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 
 from core.config import load_config, ConfigError
 from core.dataset import load_cases, DatasetError
-from core.providers import build_provider, ProviderError, as_model_call
+from core.providers import ProviderError
 from core.registry import get_plugin, UnknownTaskError
 from core.report_io import write_records
-from core.runner import run_batch
 from gates import GateReport, run_gates
-
-
-def _load_canary(task: str) -> list:
-    path = f"datasets/canary/{task}/cases.json"
-    if not os.path.exists(path):
-        return []
-    return load_cases(path)
+from server.runs import execute_run, RunHooks, GateAborted, _load_canary
 
 
 def _print_gate_report(report: GateReport) -> None:
@@ -40,16 +32,19 @@ def _print_gate_failures(report: GateReport) -> None:
 def _run(args: argparse.Namespace) -> int:
     try:
         cfg = load_config(args.config)
-        plugin = get_plugin(cfg.task)
-        cases = load_cases(cfg.dataset)
-        canary_cases = _load_canary(cfg.task)
-    except (ConfigError, DatasetError, UnknownTaskError) as e:
+    except ConfigError as e:
         print(f"error: {e}")
         return 1
 
-    gate_template = cfg.run_config_for("baseline")
-
     if args.baselines_only:
+        try:
+            plugin = get_plugin(cfg.task)
+            cases = load_cases(cfg.dataset)
+            canary_cases = _load_canary(cfg.task)
+        except (ConfigError, DatasetError, UnknownTaskError) as e:
+            print(f"error: {e}")
+            return 1
+        gate_template = cfg.run_config_for("baseline")
         report = run_gates(plugin, cases, canary_cases, gate_template)
         _print_gate_report(report)
         return 0 if report.passed else 3
@@ -57,16 +52,22 @@ def _run(args: argparse.Namespace) -> int:
     if args.no_gate:
         print("warning: --no-gate set; skipping trust gate pre-flight")
     else:
+        # Gate check done here so monkeypatching cli.run_gates works in tests.
+        try:
+            plugin = get_plugin(cfg.task)
+            cases = load_cases(cfg.dataset)
+            canary_cases = _load_canary(cfg.task)
+        except (ConfigError, DatasetError, UnknownTaskError) as e:
+            print(f"error: {e}")
+            return 1
+        gate_template = cfg.run_config_for("baseline")
         report = run_gates(plugin, cases, canary_cases, gate_template)
         if not report.passed:
             _print_gate_failures(report)
             return 3
 
     try:
-        provider = build_provider(cfg.provider.name, cfg.provider.params)
-        model_calls = {m: as_model_call(provider, m) for m in cfg.models}
-        run_configs = {m: cfg.run_config_for(m) for m in cfg.models}
-        records = run_batch(plugin, cases, model_calls, run_configs, cfg.concurrency)
+        records = execute_run(cfg, run_gate=False)
     except (ConfigError, DatasetError, ProviderError, UnknownTaskError) as e:
         print(f"error: {e}")
         return 1
