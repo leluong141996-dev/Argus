@@ -85,3 +85,9 @@ def test_require_split_rejects_mixed():
 def test_require_split_rejects_unclassified():
     with pytest.raises(DatasetError):
         require_split([{"case_id": "a", "_split": None}], "teaching")
+
+
+def test_certification_example_loads_and_classifies():
+    cases = load_cases("datasets/certification/agent_reasoning/cases.example.json")
+    assert cases
+    assert all(c["_split"] == "certification" for c in cases)

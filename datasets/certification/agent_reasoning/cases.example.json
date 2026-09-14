@@ -1,0 +1,56 @@
+{
+  "task": "agent_reasoning",
+  "cases": [
+    {
+      "case_id": "cert-example-commute-001",
+      "claim_key": "weekday_commute",
+      "supporting_category": "ride_morning_commute",
+      "evidence": [
+        {
+          "id": "e1",
+          "category": "ride_morning_commute",
+          "summary": "8:02am ride from Saved Place: Home to Central Office"
+        },
+        {
+          "id": "e2",
+          "category": "ride_morning_commute",
+          "summary": "8:11am ride from Saved Place: Home to Central Office"
+        },
+        {
+          "id": "e3",
+          "category": "food_order",
+          "summary": "Evening grocery order, unrelated to commute pattern"
+        }
+      ],
+      "_oracle": {
+        "claims": {"weekday_commute": "likely_home_to_office_commute"},
+        "evidence_ids": ["e1", "e2"],
+        "confidence": 0.9,
+        "action": "no_action"
+      }
+    },
+    {
+      "case_id": "cert-example-dietary-001",
+      "claim_key": "dietary_preference",
+      "supporting_category": "food_order",
+      "evidence": [
+        {
+          "id": "e1",
+          "category": "food_order",
+          "summary": "A single 10:12pm dinner order"
+        },
+        {
+          "id": "e2",
+          "category": "support_contact",
+          "summary": "Billing question ticket, unrelated to eating pattern"
+        }
+      ],
+      "_oracle": {
+        "claims": {"dietary_preference": "insufficient_evidence"},
+        "evidence_ids": ["e1"],
+        "confidence": 0.4,
+        "action": "no_action"
+      }
+    }
+  ]
+}

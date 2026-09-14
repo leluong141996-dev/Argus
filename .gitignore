@@ -224,3 +224,7 @@ docs/superpowers/
 
 # Claude
 .claude/
+
+# Certification hold-out data: real cases stay local, only the .example template is public
+datasets/certification/**/cases.json
+!datasets/certification/**/cases.example.json
