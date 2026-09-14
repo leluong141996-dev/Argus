@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "argus-eval"
+version = "0.1.0"
+description = "An open-source benchmark and evaluation platform for AI agents."
+requires-python = ">=3.10"
+dependencies = ["PyYAML>=6.0", "httpx>=0.27"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+argus = "core.cli:main"
+
+[tool.setuptools]
+packages = ["core", "core.providers", "plugins", "plugins.agent_reasoning", "dashboards"]
