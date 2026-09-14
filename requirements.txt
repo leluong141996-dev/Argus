@@ -1,0 +1,12 @@
+# ARGUS runtime dependencies
+#
+# The scoring core (core/, plugins/, dashboards/aggregate.py) is pure stdlib and
+# needs nothing here. Dependencies below are added as later milestones land —
+# see docs/ROADMAP.md.
+
+# --- Development / test ---
+pytest>=7.0
+
+# --- Planned in M1 (end-to-end run: CLI + config + Groq provider) ---
+# PyYAML>=6.0      # config loader (configs/*.yaml)
+# httpx>=0.27      # Groq provider adapter (OpenAI-compatible HTTP)
