@@ -1,0 +1,2 @@
+# Allow the TypeScript lib directory (root .gitignore has a generic lib/ rule)
+!lib/
