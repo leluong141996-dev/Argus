@@ -29,6 +29,14 @@ def _print_gate_failures(report: GateReport) -> None:
                 print(f"  [{r.name}] {c.name}: {c.detail}")
 
 
+def _serve(args: argparse.Namespace) -> int:
+    import uvicorn
+    from server.app import create_app
+    app = create_app()
+    uvicorn.run(app, host=args.host, port=args.port)
+    return 0
+
+
 def _run(args: argparse.Namespace) -> int:
     try:
         cfg = load_config(args.config)
@@ -79,6 +87,11 @@ def main(argv: list[str] | None = None) -> int:
     run_p.add_argument("--no-gate", action="store_true",
                        help="skip the trust-gate pre-flight before a normal run")
     run_p.set_defaults(func=_run)
+
+    serve_p = sub.add_parser("serve", help="run the ARGUS web app (API + UI)")
+    serve_p.add_argument("--host", default="127.0.0.1")
+    serve_p.add_argument("--port", type=int, default=8000)
+    serve_p.set_defaults(func=_serve)
 
     args = parser.parse_args(argv)
     return args.func(args)
