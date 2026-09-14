@@ -22,8 +22,8 @@
 > pipeline-style scoring and the reference `agent_reasoning` plugin. The CLI,
 > config layer, provider adapters, additional plugins, trust machinery
 > (baselines/gates/datasets), and the web dashboard described below are the
-> *target* design and are still being built. See [`docs/ROADMAP.md`](./docs/ROADMAP.md)
-> for exactly what exists versus what is planned.
+> *target* design and are still being built. See the [Roadmap](#roadmap)
+> for what exists versus what is planned.
 
 ## Why ARGUS
 
@@ -123,7 +123,7 @@ Model summaries (dashboard-ready aggregates) are derived from these rows, never 
 
 ## Dashboard
 
-> **Planned (M3).** `dashboards/web/` does not exist yet; this section describes the target. See [`docs/ROADMAP.md`](./docs/ROADMAP.md).
+> **Planned.** `dashboards/web/` does not exist yet; this section describes the target.
 
 `dashboards/web/index.html` is a self-contained web dashboard — no server, no build step, no external dependencies. Open the file directly in a browser.
 
@@ -154,8 +154,7 @@ Everything runs client-side in the browser — nothing is uploaded anywhere.
 
 > **Note:** this is the *target* layout. Many directories below (`configs/`,
 > `core/providers/`, `datasets/`, `baselines/`, `gates/`, most `plugins/`, and
-> `dashboards/web/`) are planned, not yet present. See [`docs/ROADMAP.md`](./docs/ROADMAP.md)
-> for current status.
+> `dashboards/web/`) are planned, not yet present.
 
 ```
 argus/
@@ -205,7 +204,7 @@ argus/
 
 ## Quick start
 
-> **Note:** the `argus` CLI is planned (milestone M1 in [`docs/ROADMAP.md`](./docs/ROADMAP.md))
+> **Note:** the `argus` CLI is planned (see the [Roadmap](#roadmap))
 > and not installable yet. What runs today is the no-dependency demo:
 >
 > ```bash
@@ -237,7 +236,7 @@ argus report --run-id <run_id>
 - [x] Pipeline-style scoring: separate retrieval, reasoning, action selection, latency, cost, and safety instead of scoring only the final answer. See [`docs/pipeline-scoring.md`](./docs/pipeline-scoring.md) and the reference implementation in [`plugins/agent_reasoning/`](./plugins/agent_reasoning/).
 - [ ] More task plugins contributed by the community (RAG faithfulness, multi-turn tool orchestration, long-horizon agent planning).
 - [ ] Standardized canary suite shared across all plugins.
-- [ ] Web dashboard for reporting task-level results (not a single global leaderboard). Planned — see [`docs/ROADMAP.md`](./docs/ROADMAP.md).
+- [ ] Web dashboard for reporting task-level results (not a single global leaderboard). Planned.
 - [ ] Plugin authoring guide + cookiecutter template so new benchmark surfaces don't require touching core.
 
 ## Contributing

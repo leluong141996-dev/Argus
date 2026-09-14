@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Internal planning / process artifacts — not for the public repo
+docs/ROADMAP.md
+docs/superpowers/
+.superpowers/
