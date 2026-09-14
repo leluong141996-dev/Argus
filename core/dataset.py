@@ -45,4 +45,7 @@ def load_cases(path: str) -> list[dict[str, Any]]:
     for i, c in enumerate(cases):
         if not isinstance(c, dict) or "case_id" not in c:
             raise DatasetError(f"case #{i} in {path} is missing 'case_id'")
+    split = split_of(path)
+    for c in cases:
+        c["_split"] = split
     return cases

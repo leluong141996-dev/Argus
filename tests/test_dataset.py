@@ -42,3 +42,28 @@ def test_case_without_case_id_raises(tmp_path):
     p.write_text(json.dumps({"cases": [{"no_id": 1}]}))
     with pytest.raises(DatasetError):
         load_cases(str(p))
+
+
+def _write_cases(dirpath, cases):
+    dirpath.mkdir(parents=True, exist_ok=True)
+    p = dirpath / "cases.json"
+    p.write_text(json.dumps({"cases": cases}))
+    return str(p)
+
+
+def test_load_cases_stamps_split_teaching(tmp_path):
+    p = _write_cases(tmp_path / "datasets" / "teaching" / "t", [{"case_id": "a"}])
+    cases = load_cases(p)
+    assert all(c["_split"] == "teaching" for c in cases)
+
+
+def test_load_cases_stamps_split_certification(tmp_path):
+    p = _write_cases(tmp_path / "datasets" / "certification" / "t", [{"case_id": "a"}])
+    cases = load_cases(p)
+    assert all(c["_split"] == "certification" for c in cases)
+
+
+def test_load_cases_split_none_outside_datasets(tmp_path):
+    p = _write_cases(tmp_path / "scratch" / "t", [{"case_id": "a"}])
+    cases = load_cases(p)
+    assert all(c["_split"] is None for c in cases)
