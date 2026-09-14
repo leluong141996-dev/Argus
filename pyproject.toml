@@ -16,4 +16,4 @@ dev = ["pytest>=7.0"]
 argus = "core.cli:main"
 
 [tool.setuptools]
-packages = ["core", "core.providers", "plugins", "plugins.agent_reasoning", "dashboards"]
+packages = ["core", "core.providers", "plugins", "plugins.agent_reasoning", "dashboards", "baselines", "gates"]

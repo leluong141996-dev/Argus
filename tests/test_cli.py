@@ -29,11 +29,11 @@ def test_cli_run_end_to_end_writes_report(tmp_path):
     assert all("stages" in row for row in data)
 
 
-def test_cli_baselines_only_is_deferred(tmp_path):
+def test_cli_baselines_only_passes_on_clean_eval(tmp_path):
     cfg = tmp_path / "c.yaml"
     cfg.write_text(MOCK_CONFIG.format(out=str(tmp_path / "r.json")))
     code = main(["run", "--config", str(cfg), "--baselines-only"])
-    assert code == 2  # planned for M2, not implemented
+    assert code == 0  # all baselines misbehave exactly as designed
 
 
 def test_cli_unknown_task_exits_nonzero(tmp_path):
