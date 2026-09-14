@@ -231,11 +231,14 @@ python examples/run_pipeline_demo.py   # stage-by-stage scoring walkthrough, no 
 pytest                                 # the scoring contract's tests
 ```
 
-Two commands earlier drafts promised are still on the [roadmap](#roadmap):
+One command earlier drafts promised is still on the [roadmap](#roadmap):
 
 ```bash
-# Planned: run the shortcut baselines and assert which ones must fail
-argus run --config configs/agent_reasoning.yaml --baselines-only   # currently exits with a "planned" notice
+# Run the shortcut baselines + canaries and assert which ones must fail.
+# Exits 0 if every baseline misbehaves exactly as designed, 3 if a shortcut
+# slips through (the eval has a hole). A normal `argus run` runs this same
+# gate suite as a pre-flight and refuses to write a report if it fails.
+argus run --config configs/agent_reasoning.yaml --baselines-only
 
 # Planned: print a console summary for a past run
 argus report --run-id <run_id>
