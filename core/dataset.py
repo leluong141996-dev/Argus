@@ -49,3 +49,18 @@ def load_cases(path: str) -> list[dict[str, Any]]:
     for c in cases:
         c["_split"] = split
     return cases
+
+
+def require_split(cases: list[dict[str, Any]], expected: str) -> None:
+    """Raise DatasetError if any case is not from the expected split.
+
+    Callers that must run on exactly one split assert provenance with this
+    after load_cases. A case whose _split != expected -- including None
+    (unclassified) -- is a boundary violation.
+    """
+    bad = sorted({str(c.get("_split")) for c in cases if c.get("_split") != expected})
+    if bad:
+        raise DatasetError(
+            f"expected all cases from split '{expected}' but found split(s) {bad}; "
+            "certification and teaching data must not mix"
+        )

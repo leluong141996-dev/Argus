@@ -5,7 +5,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from core.dataset import load_cases, DatasetError, split_of  # noqa: E402
+from core.dataset import load_cases, DatasetError, split_of, require_split  # noqa: E402
 
 
 def test_split_of_classifies_known_roots():
@@ -67,3 +67,21 @@ def test_load_cases_split_none_outside_datasets(tmp_path):
     p = _write_cases(tmp_path / "scratch" / "t", [{"case_id": "a"}])
     cases = load_cases(p)
     assert all(c["_split"] is None for c in cases)
+
+
+def test_require_split_passes_uniform():
+    require_split([{"case_id": "a", "_split": "teaching"}], "teaching")  # no raise
+
+
+def test_require_split_rejects_mixed():
+    with pytest.raises(DatasetError):
+        require_split(
+            [{"case_id": "a", "_split": "teaching"},
+             {"case_id": "b", "_split": "certification"}],
+            "teaching",
+        )
+
+
+def test_require_split_rejects_unclassified():
+    with pytest.raises(DatasetError):
+        require_split([{"case_id": "a", "_split": None}], "teaching")
