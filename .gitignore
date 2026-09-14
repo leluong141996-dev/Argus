@@ -234,3 +234,6 @@ runs/
 argus.db
 ui/dist/
 ui/node_modules/
+ui/*.tsbuildinfo
+ui/vite.config.js
+ui/vite.config.d.ts
