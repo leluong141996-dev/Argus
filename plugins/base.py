@@ -12,9 +12,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from core.pipeline import RUNNER_OWNED_STAGES, Stage, StageResult
+
+if TYPE_CHECKING:
+    from baselines.base import Baseline
 
 
 @dataclass
@@ -50,6 +53,15 @@ class TaskPlugin(ABC):
         runner validates coverage and fails loudly if a plugin silently
         drops a stage (see core/runner.py: _validate_stage_coverage)."""
         raise NotImplementedError
+
+    def baselines(self) -> list["Baseline"]:
+        """Shortcut baselines whose Expectations the eval must satisfy.
+
+        Optional and additive: default is none. A plugin opts in by returning
+        generic + task-specific baselines. Existing plugins, run_case, and
+        run_batch are unaffected.
+        """
+        return []
 
     @classmethod
     def validate_stages(cls) -> None:

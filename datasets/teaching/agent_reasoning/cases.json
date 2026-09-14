@@ -26,7 +26,13 @@
           "category": "support_contact",
           "summary": "Refund support ticket, six months old and unrelated"
         }
-      ]
+      ],
+      "_oracle": {
+        "claims": {"weekday_commute": "likely_home_to_office_commute"},
+        "evidence_ids": ["e1", "e2"],
+        "confidence": 0.9,
+        "action": "no_action"
+      }
     },
     {
       "case_id": "reasoning-dietary-001",
@@ -43,7 +49,13 @@
           "category": "ride_other",
           "summary": "Weekend leisure ride, unrelated to eating pattern"
         }
-      ]
+      ],
+      "_oracle": {
+        "claims": {"dietary_preference": "insufficient_evidence"},
+        "evidence_ids": ["e1"],
+        "confidence": 0.4,
+        "action": "no_action"
+      }
     }
   ]
 }

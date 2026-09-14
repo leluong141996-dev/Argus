@@ -193,3 +193,13 @@ class AgentReasoningPlugin(TaskPlugin):
                 details={"confidence": confidence, "evidence_count": len(cited)},
             )
         return StageResult(Stage.SAFETY, 1.0, True)
+
+    # ------------------------------------------------------------------ #
+    # baselines: shortcut outputs the scorer must reject (M2)
+    # ------------------------------------------------------------------ #
+
+    def baselines(self):
+        from baselines.shared import generic_baselines
+        from plugins.agent_reasoning.baselines import contract_baselines
+
+        return [*generic_baselines(), *contract_baselines()]
