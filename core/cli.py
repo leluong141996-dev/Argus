@@ -10,7 +10,7 @@ from core.providers import ProviderError
 from core.registry import get_plugin, UnknownTaskError
 from core.report_io import write_records
 from gates import GateReport, run_gates
-from server.runs import execute_run, RunHooks, GateAborted, _load_canary
+from server.runs import execute_run, GateAborted, _load_canary
 
 
 def _print_gate_report(report: GateReport) -> None:
@@ -51,23 +51,11 @@ def _run(args: argparse.Namespace) -> int:
 
     if args.no_gate:
         print("warning: --no-gate set; skipping trust gate pre-flight")
-    else:
-        # Gate check done here so monkeypatching cli.run_gates works in tests.
-        try:
-            plugin = get_plugin(cfg.task)
-            cases = load_cases(cfg.dataset)
-            canary_cases = _load_canary(cfg.task)
-        except (ConfigError, DatasetError, UnknownTaskError) as e:
-            print(f"error: {e}")
-            return 1
-        gate_template = cfg.run_config_for("baseline")
-        report = run_gates(plugin, cases, canary_cases, gate_template)
-        if not report.passed:
-            _print_gate_failures(report)
-            return 3
-
     try:
-        records = execute_run(cfg, run_gate=False)
+        records = execute_run(cfg, run_gate=not args.no_gate)
+    except GateAborted as e:
+        _print_gate_failures(e.report)
+        return 3
     except (ConfigError, DatasetError, ProviderError, UnknownTaskError) as e:
         print(f"error: {e}")
         return 1

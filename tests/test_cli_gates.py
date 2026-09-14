@@ -5,6 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import core.cli as cli  # noqa: E402
+import server.runs as runs_mod  # noqa: E402
 from core.cli import main  # noqa: E402
 from gates.base import CheckResult, GateReport, GateResult  # noqa: E402
 
@@ -28,7 +29,7 @@ def _failing_gates(*a, **k):
 
 
 def test_gate_failure_blocks_run_and_writes_no_report(tmp_path, monkeypatch):
-    monkeypatch.setattr(cli, "run_gates", _failing_gates)
+    monkeypatch.setattr(runs_mod, "run_gates", _failing_gates)
     out = tmp_path / "r.json"
     code = main(["run", "--config", str(_cfg(tmp_path, out))])
     assert code == 3
@@ -36,7 +37,7 @@ def test_gate_failure_blocks_run_and_writes_no_report(tmp_path, monkeypatch):
 
 
 def test_no_gate_bypasses_preflight(tmp_path, monkeypatch):
-    monkeypatch.setattr(cli, "run_gates", _failing_gates)
+    monkeypatch.setattr(runs_mod, "run_gates", _failing_gates)
     out = tmp_path / "r.json"
     code = main(["run", "--config", str(_cfg(tmp_path, out)), "--no-gate"])
     assert code == 0
