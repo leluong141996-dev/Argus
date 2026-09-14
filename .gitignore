@@ -221,3 +221,6 @@ __marimo__/
 docs/ROADMAP.md
 docs/superpowers/
 .superpowers/
+
+# Claude
+.claude/
