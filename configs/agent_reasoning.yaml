@@ -1,0 +1,15 @@
+run_id: null
+task: agent_reasoning
+dataset: datasets/teaching/agent_reasoning/cases.json
+models:
+  - openai/gpt-oss-120b
+provider:
+  name: groq                 # switch to "mock" for a no-network run
+  params:
+    temperature: 0
+    max_tokens: 512
+concurrency: 2
+seed: null
+output: report.json
+cost_budget_usd: null
+latency_budget_ms: null
