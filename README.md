@@ -143,6 +143,23 @@ python dashboards/build_dashboard.py my-run-report.json
 
 Everything runs client-side in the browser — nothing is uploaded anywhere.
 
+### Web app (run & follow)
+
+Beyond the static quick-view dashboard, ARGUS ships an interactive local app to
+*operate* the harness — pick a config, trigger a run, follow it live per case,
+cancel it, and browse run history.
+
+```bash
+pip install -e ".[server]"        # FastAPI + uvicorn (optional extra)
+cd ui && npm install && npm run build && cd ..
+argus serve                        # http://127.0.0.1:8000
+```
+
+The backend runs ARGUS in-process, streams per-case progress over SSE, and
+records run history to a local SQLite file (`argus.db`); each run's rows are
+written to `runs/<run_id>/report.json`. The static `dashboards/web/index.html`
+remains available as a zero-dependency quick view.
+
 ## What ARGUS is *not*
 
 - **Not proof of production uplift.** Synthetic evals tell you whether a model respects a contract under controlled pressure. Live retrieval quality, real user impact, and rollout decisions need separate evidence.
