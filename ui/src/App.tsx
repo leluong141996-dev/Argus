@@ -1,8 +1,7 @@
 import { Link, Route, Routes } from "react-router-dom";
-
-function Placeholder({ title }: { title: string }) {
-  return <h2>{title}</h2>;
-}
+import { NewRun } from "./pages/NewRun";
+import { History } from "./pages/History";
+import { Follow } from "./pages/Follow";
 
 export default function App() {
   return (
@@ -12,9 +11,9 @@ export default function App() {
         <Link to="/runs">History</Link>
       </nav>
       <Routes>
-        <Route path="/" element={<Placeholder title="New Run" />} />
-        <Route path="/runs" element={<Placeholder title="History" />} />
-        <Route path="/runs/:id" element={<Placeholder title="Follow" />} />
+        <Route path="/" element={<NewRun />} />
+        <Route path="/runs" element={<History />} />
+        <Route path="/runs/:id" element={<Follow />} />
       </Routes>
     </div>
   );
