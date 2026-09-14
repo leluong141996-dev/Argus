@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Any, Callable
 
@@ -95,3 +96,44 @@ def _validate_stage_coverage(plugin: TaskPlugin, stages: list[StageResult]) -> N
 
 def new_run_id() -> str:
     return f"run-{uuid.uuid4().hex[:12]}"
+
+
+def run_batch(
+    plugin: TaskPlugin,
+    cases: list[dict[str, Any]],
+    model_calls: dict[str, Callable[[str], str]],
+    run_configs: dict[str, RunConfig],
+    concurrency: int = 1,
+) -> list[RowRecord]:
+    """Run every (case, model) pair. A failure in one unit becomes a record
+    with `skip_reason` set, so one bad case never aborts the whole run.
+    Results are returned sorted by (case_id, model) for reproducibility."""
+    units = [(case, model) for case in cases for model in model_calls]
+
+    def _one(unit: tuple[dict[str, Any], str]) -> RowRecord:
+        case, model = unit
+        try:
+            return run_case(plugin, case, model_calls[model], run_configs[model])
+        except Exception as e:  # noqa: BLE001 - isolate one case's failure
+            rc = run_configs[model]
+            return RowRecord(
+                case_id=case.get("case_id", "<unknown>"),
+                task=plugin.name,
+                model=model,
+                provider=rc.provider,
+                pipeline=PipelineScore(stages=[]),
+                raw_output="",
+                parsed_output=None,
+                tokens_in=0,
+                tokens_out=0,
+                latency_ms=0.0,
+                run_id=rc.run_id,
+                seed=rc.seed,
+                skip_reason=f"{type(e).__name__}: {e}",
+            )
+
+    with ThreadPoolExecutor(max_workers=max(1, concurrency)) as pool:
+        records = list(pool.map(_one, units))
+
+    records.sort(key=lambda r: (r.case_id, r.model))
+    return records
