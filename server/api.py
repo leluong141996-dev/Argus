@@ -7,15 +7,15 @@ import threading
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from core.config import ArgusConfig, ConfigError, load_config
 from core.dataset import DatasetError, split_of
-from core.providers import ProviderError
 from core.record_schema import RowRecord
 from core.registry import UnknownTaskError
 from core.report_io import read_records, write_records
-from server.events import RunChannel, RunRegistry
+from server.events import RunRegistry
 from server.runs import GateAborted, RunHooks, execute_run
 from server.store import RunMeta, RunStore
 
@@ -181,5 +181,24 @@ def build_router(store: RunStore, registry: RunRegistry) -> APIRouter:
             raise HTTPException(status_code=409, detail="run not active")
         ch.cancel_event.set()
         return {"cancelling": True}
+
+    @router.get("/runs/{run_id}/events")
+    def run_events(run_id: str):
+        ch = registry.get(run_id)
+
+        def gen():
+            if ch is None:
+                meta = store.get_run(run_id)
+                if meta is None:
+                    yield f"data: {json.dumps({'type': 'error', 'message': 'unknown run'})}\n\n"
+                    return
+                terminal = {"type": meta["status"], "run_id": run_id,
+                            "passed": meta.get("passed"), "failed": meta.get("failed")}
+                yield f"data: {json.dumps(terminal)}\n\n"
+                return
+            for event in ch.stream():
+                yield f"data: {json.dumps(event)}\n\n"
+
+        return StreamingResponse(gen(), media_type="text/event-stream")
 
     return router
