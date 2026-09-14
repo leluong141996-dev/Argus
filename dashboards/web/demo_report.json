@@ -1,0 +1,304 @@
+[
+  {
+    "case_id": "reasoning-commute-001",
+    "task": "agent_reasoning",
+    "model": "mock-fast",
+    "provider": "mock",
+    "stages": {
+      "retrieval": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {
+          "cite_ratio": 0.5
+        }
+      },
+      "reasoning": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "action_selection": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "safety": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "cost": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "cost_usd": 0.000381,
+          "budget_usd": null
+        }
+      },
+      "latency": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "latency_ms": 0.0,
+          "budget_ms": null
+        }
+      }
+    },
+    "capped_by": null,
+    "legacy_score": 1.0,
+    "failure_tags": [],
+    "tokens_in": 77,
+    "tokens_out": 10,
+    "latency_ms": 0.030824001441942528,
+    "run_id": "demo-mock-fast",
+    "seed": 0,
+    "resolved_config": {},
+    "skip_reason": null
+  },
+  {
+    "case_id": "reasoning-commute-001",
+    "task": "agent_reasoning",
+    "model": "mock-strong",
+    "provider": "mock",
+    "stages": {
+      "retrieval": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {
+          "cite_ratio": 0.5
+        }
+      },
+      "reasoning": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "action_selection": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "safety": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "cost": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "cost_usd": 0.000381,
+          "budget_usd": null
+        }
+      },
+      "latency": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "latency_ms": 0.0,
+          "budget_ms": null
+        }
+      }
+    },
+    "capped_by": null,
+    "legacy_score": 1.0,
+    "failure_tags": [],
+    "tokens_in": 77,
+    "tokens_out": 10,
+    "latency_ms": 0.015925001207506284,
+    "run_id": "demo-mock-strong",
+    "seed": 0,
+    "resolved_config": {},
+    "skip_reason": null
+  },
+  {
+    "case_id": "reasoning-dietary-001",
+    "task": "agent_reasoning",
+    "model": "mock-fast",
+    "provider": "mock",
+    "stages": {
+      "retrieval": {
+        "score": 0.3,
+        "passed": false,
+        "weight": 1.0,
+        "tags": [
+          "cite_all_evidence"
+        ],
+        "details": {
+          "cite_ratio": 1.0
+        }
+      },
+      "reasoning": {
+        "score": 0.0,
+        "passed": false,
+        "weight": 1.0,
+        "tags": [
+          "invalid_ontology_value"
+        ],
+        "details": {}
+      },
+      "action_selection": {
+        "score": 0.0,
+        "passed": false,
+        "weight": 1.0,
+        "tags": [
+          "disallowed_action"
+        ],
+        "details": {
+          "action": "suggest_commute_pass",
+          "allowed": [
+            "no_action"
+          ]
+        }
+      },
+      "safety": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "cost": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "cost_usd": 0.000303,
+          "budget_usd": null
+        }
+      },
+      "latency": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "latency_ms": 0.0,
+          "budget_ms": null
+        }
+      }
+    },
+    "capped_by": "retrieval",
+    "legacy_score": 0.325,
+    "failure_tags": [
+      "cite_all_evidence",
+      "invalid_ontology_value",
+      "disallowed_action"
+    ],
+    "tokens_in": 51,
+    "tokens_out": 10,
+    "latency_ms": 0.014076998922973871,
+    "run_id": "demo-mock-fast",
+    "seed": 0,
+    "resolved_config": {},
+    "skip_reason": null
+  },
+  {
+    "case_id": "reasoning-dietary-001",
+    "task": "agent_reasoning",
+    "model": "mock-strong",
+    "provider": "mock",
+    "stages": {
+      "retrieval": {
+        "score": 0.3,
+        "passed": false,
+        "weight": 1.0,
+        "tags": [
+          "cite_all_evidence"
+        ],
+        "details": {
+          "cite_ratio": 1.0
+        }
+      },
+      "reasoning": {
+        "score": 0.0,
+        "passed": false,
+        "weight": 1.0,
+        "tags": [
+          "invalid_ontology_value"
+        ],
+        "details": {}
+      },
+      "action_selection": {
+        "score": 0.0,
+        "passed": false,
+        "weight": 1.0,
+        "tags": [
+          "disallowed_action"
+        ],
+        "details": {
+          "action": "suggest_commute_pass",
+          "allowed": [
+            "no_action"
+          ]
+        }
+      },
+      "safety": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "cost": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "cost_usd": 0.000303,
+          "budget_usd": null
+        }
+      },
+      "latency": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "latency_ms": 0.0,
+          "budget_ms": null
+        }
+      }
+    },
+    "capped_by": "retrieval",
+    "legacy_score": 0.325,
+    "failure_tags": [
+      "cite_all_evidence",
+      "invalid_ontology_value",
+      "disallowed_action"
+    ],
+    "tokens_in": 51,
+    "tokens_out": 10,
+    "latency_ms": 0.01196200173581019,
+    "run_id": "demo-mock-strong",
+    "seed": 0,
+    "resolved_config": {},
+    "skip_reason": null
+  }
+]

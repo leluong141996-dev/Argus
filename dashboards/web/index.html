@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ARGUS Dashboard</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1d21; --muted: #8a9299; --border: #e2e6ea;
+    --head: #f5f7f9; --chip: #fce4e4; --chip-fg: #a12222; --ok: #1a7f37; --bad: #a12222;
+    --accent: #2d6cdf;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 24px; font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+         color: var(--fg); background: var(--bg); }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  .controls { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .controls label { font-weight: 600; }
+  #error-box { background: var(--chip); color: var(--chip-fg); border: 1px solid var(--chip-fg);
+               padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; }
+  h2 { font-size: 15px; margin: 24px 0 8px; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 8px; font-size: 13px; }
+  th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--head); font-weight: 600; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .muted, .muted th, td.muted { color: var(--muted); }
+  .stagecell { white-space: nowrap; }
+  .pass { color: var(--ok); } .fail { color: var(--bad); font-weight: 600; }
+  .chip { display: inline-block; background: var(--chip); color: var(--chip-fg);
+          border-radius: 10px; padding: 1px 8px; margin: 1px 3px 1px 0; font-size: 12px; }
+  tr.rowhead { cursor: pointer; }
+  tr.rowhead:hover td { background: #f0f4fb; }
+  .caret { color: var(--accent); font-weight: 700; margin-right: 6px; }
+  pre { margin: 4px 0; padding: 8px; background: var(--head); border-radius: 4px; overflow-x: auto;
+        font-size: 12px; }
+  .detail td { background: #fbfcfd; }
+  .stage-detail { margin-bottom: 8px; }
+  .stage-detail .name { font-weight: 600; }
+  .empty { color: var(--muted); padding: 12px 0; }
+</style>
+</head>
+<body>
+  <h1>ARGUS Dashboard</h1>
+  <p class="sub">Stage-by-stage results per case &times; model. No global score by design.</p>
+
+  <div class="controls">
+    <label for="file-input">Load report.json:</label>
+    <input type="file" id="file-input" accept=".json,application/json">
+  </div>
+
+  <div id="error-box" hidden></div>
+  <section id="stage-matrix"></section>
+  <section id="row-table"></section>
+
+<script>
+  const EMBEDDED_REPORT = /*__ARGUS_REPORT__*/ [
+  {
+    "case_id": "reasoning-commute-001",
+    "task": "agent_reasoning",
+    "model": "mock-fast",
+    "provider": "mock",
+    "stages": {
+      "retrieval": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {
+          "cite_ratio": 0.5
+        }
+      },
+      "reasoning": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "action_selection": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "safety": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "cost": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "cost_usd": 0.000381,
+          "budget_usd": null
+        }
+      },
+      "latency": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "latency_ms": 0.0,
+          "budget_ms": null
+        }
+      }
+    },
+    "capped_by": null,
+    "legacy_score": 1.0,
+    "failure_tags": [],
+    "tokens_in": 77,
+    "tokens_out": 10,
+    "latency_ms": 0.030824001441942528,
+    "run_id": "demo-mock-fast",
+    "seed": 0,
+    "resolved_config": {},
+    "skip_reason": null
+  },
+  {
+    "case_id": "reasoning-commute-001",
+    "task": "agent_reasoning",
+    "model": "mock-strong",
+    "provider": "mock",
+    "stages": {
+      "retrieval": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {
+          "cite_ratio": 0.5
+        }
+      },
+      "reasoning": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "action_selection": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "safety": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "cost": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "cost_usd": 0.000381,
+          "budget_usd": null
+        }
+      },
+      "latency": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "latency_ms": 0.0,
+          "budget_ms": null
+        }
+      }
+    },
+    "capped_by": null,
+    "legacy_score": 1.0,
+    "failure_tags": [],
+    "tokens_in": 77,
+    "tokens_out": 10,
+    "latency_ms": 0.015925001207506284,
+    "run_id": "demo-mock-strong",
+    "seed": 0,
+    "resolved_config": {},
+    "skip_reason": null
+  },
+  {
+    "case_id": "reasoning-dietary-001",
+    "task": "agent_reasoning",
+    "model": "mock-fast",
+    "provider": "mock",
+    "stages": {
+      "retrieval": {
+        "score": 0.3,
+        "passed": false,
+        "weight": 1.0,
+        "tags": [
+          "cite_all_evidence"
+        ],
+        "details": {
+          "cite_ratio": 1.0
+        }
+      },
+      "reasoning": {
+        "score": 0.0,
+        "passed": false,
+        "weight": 1.0,
+        "tags": [
+          "invalid_ontology_value"
+        ],
+        "details": {}
+      },
+      "action_selection": {
+        "score": 0.0,
+        "passed": false,
+        "weight": 1.0,
+        "tags": [
+          "disallowed_action"
+        ],
+        "details": {
+          "action": "suggest_commute_pass",
+          "allowed": [
+            "no_action"
+          ]
+        }
+      },
+      "safety": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "cost": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "cost_usd": 0.000303,
+          "budget_usd": null
+        }
+      },
+      "latency": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "latency_ms": 0.0,
+          "budget_ms": null
+        }
+      }
+    },
+    "capped_by": "retrieval",
+    "legacy_score": 0.325,
+    "failure_tags": [
+      "cite_all_evidence",
+      "invalid_ontology_value",
+      "disallowed_action"
+    ],
+    "tokens_in": 51,
+    "tokens_out": 10,
+    "latency_ms": 0.014076998922973871,
+    "run_id": "demo-mock-fast",
+    "seed": 0,
+    "resolved_config": {},
+    "skip_reason": null
+  },
+  {
+    "case_id": "reasoning-dietary-001",
+    "task": "agent_reasoning",
+    "model": "mock-strong",
+    "provider": "mock",
+    "stages": {
+      "retrieval": {
+        "score": 0.3,
+        "passed": false,
+        "weight": 1.0,
+        "tags": [
+          "cite_all_evidence"
+        ],
+        "details": {
+          "cite_ratio": 1.0
+        }
+      },
+      "reasoning": {
+        "score": 0.0,
+        "passed": false,
+        "weight": 1.0,
+        "tags": [
+          "invalid_ontology_value"
+        ],
+        "details": {}
+      },
+      "action_selection": {
+        "score": 0.0,
+        "passed": false,
+        "weight": 1.0,
+        "tags": [
+          "disallowed_action"
+        ],
+        "details": {
+          "action": "suggest_commute_pass",
+          "allowed": [
+            "no_action"
+          ]
+        }
+      },
+      "safety": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 1.0,
+        "tags": [],
+        "details": {}
+      },
+      "cost": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "cost_usd": 0.000303,
+          "budget_usd": null
+        }
+      },
+      "latency": {
+        "score": 1.0,
+        "passed": true,
+        "weight": 0.0,
+        "tags": [],
+        "details": {
+          "latency_ms": 0.0,
+          "budget_ms": null
+        }
+      }
+    },
+    "capped_by": "retrieval",
+    "legacy_score": 0.325,
+    "failure_tags": [
+      "cite_all_evidence",
+      "invalid_ontology_value",
+      "disallowed_action"
+    ],
+    "tokens_in": 51,
+    "tokens_out": 10,
+    "latency_ms": 0.01196200173581019,
+    "run_id": "demo-mock-strong",
+    "seed": 0,
+    "resolved_config": {},
+    "skip_reason": null
+  }
+] /*__END_REPORT__*/;
+  const STAGE_ORDER = ["retrieval", "reasoning", "action_selection", "safety", "cost", "latency"];
+
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function normalize(data) {
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.rows)) return data.rows;
+    return null;
+  }
+
+  function orderedStages(rows) {
+    const present = new Set();
+    for (const r of rows) {
+      for (const k of Object.keys(r.stages || {})) present.add(k);
+    }
+    const known = STAGE_ORDER.filter(s => present.has(s));
+    const unknown = [...present].filter(s => !STAGE_ORDER.includes(s)).sort();
+    return [...known, ...unknown];
+  }
+
+  // group rows by task|model, then compute per-stage mean_score / pass_rate / n / weight
+  function aggregate(rows) {
+    const groups = new Map();
+    for (const r of rows) {
+      const key = r.task + "|" + r.model;
+      if (!groups.has(key)) groups.set(key, { task: r.task, model: r.model, rows: [] });
+      groups.get(key).rows.push(r);
+    }
+    const result = [];
+    for (const g of groups.values()) {
+      const stages = {};
+      for (const r of g.rows) {
+        for (const [name, st] of Object.entries(r.stages || {})) {
+          if (!stages[name]) stages[name] = { sum: 0, pass: 0, n: 0, weight: st.weight };
+          stages[name].sum += (st.score || 0);
+          stages[name].pass += st.passed ? 1 : 0;
+          stages[name].n += 1;
+          stages[name].weight = st.weight;
+        }
+      }
+      const cells = {};
+      for (const [name, s] of Object.entries(stages)) {
+        cells[name] = { mean: s.n ? s.sum / s.n : 0, pass_rate: s.n ? s.pass / s.n : 0, n: s.n, weight: s.weight };
+      }
+      result.push({ task: g.task, model: g.model, n: g.rows.length, cells });
+    }
+    result.sort((a, b) => (a.task + a.model).localeCompare(b.task + b.model));
+    return result;
+  }
+
+  function renderMatrix(rows) {
+    const el = document.getElementById("stage-matrix");
+    if (!rows.length) { el.innerHTML = '<h2>Stage matrix</h2><p class="empty">No rows in this report.</p>'; return; }
+    const stages = orderedStages(rows);
+    const groups = aggregate(rows);
+    let html = '<h2>Stage matrix <span class="sub">(mean score &middot; pass rate)</span></h2>';
+    html += '<table><thead><tr><th>Task</th><th>Model</th><th class="num">n</th>';
+    for (const s of stages) html += '<th class="stagecell">' + esc(s) + '</th>';
+    html += '</tr></thead><tbody>';
+    for (const g of groups) {
+      html += '<tr><td>' + esc(g.task) + '</td><td>' + esc(g.model) + '</td><td class="num">' + g.n + '</td>';
+      for (const s of stages) {
+        const c = g.cells[s];
+        if (!c) { html += '<td class="muted">&mdash;</td>'; continue; }
+        const cls = c.weight === 0 ? ' class="stagecell muted"' : ' class="stagecell"';
+        html += '<td' + cls + '>' + c.mean.toFixed(2) + ' &middot; ' + Math.round(c.pass_rate * 100) + '%</td>';
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table><p class="sub">Muted columns have weight 0 (runner-owned, non-gating).</p>';
+    el.innerHTML = html;
+  }
+
+  function renderRows(rows) {
+    const el = document.getElementById("row-table");
+    if (!rows.length) { el.innerHTML = '<h2>Rows</h2><p class="empty">No rows in this report.</p>'; return; }
+    let html = '<h2>Rows <span class="sub">(click a row for stage detail)</span></h2>';
+    html += '<table><thead><tr><th>Case</th><th>Model</th><th>Capped by</th>'
+          + '<th class="num">Score</th><th>Failure tags</th><th class="num">Tokens</th>'
+          + '<th class="num">Latency</th></tr></thead><tbody>';
+    rows.forEach((r, i) => {
+      const capped = r.capped_by ? '<span class="fail">' + esc(r.capped_by) + '</span>' : '';
+      const score = (r.legacy_score === null || r.legacy_score === undefined) ? '&mdash;' : Number(r.legacy_score).toFixed(2);
+      const tags = (r.failure_tags || []).map(t => '<span class="chip">' + esc(t) + '</span>').join('');
+      const toks = (r.tokens_in || 0) + '/' + (r.tokens_out || 0);
+      html += '<tr class="rowhead" data-row="' + i + '">'
+            + '<td><span class="caret">&#9656;</span>' + esc(r.case_id) + '</td>'
+            + '<td>' + esc(r.model) + '</td><td>' + capped + '</td>'
+            + '<td class="num">' + score + '</td><td>' + tags + '</td>'
+            + '<td class="num">' + toks + '</td><td class="num">' + esc(r.latency_ms) + '</td></tr>';
+      html += '<tr class="detail" data-detail="' + i + '" hidden><td colspan="7">' + renderDetail(r) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+    el.querySelectorAll("tr.rowhead").forEach(tr => {
+      tr.addEventListener("click", () => {
+        const i = tr.getAttribute("data-row");
+        const d = el.querySelector('tr.detail[data-detail="' + i + '"]');
+        if (d) d.hidden = !d.hidden;
+        const caret = tr.querySelector(".caret");
+        if (caret) caret.innerHTML = d && !d.hidden ? "&#9662;" : "&#9656;";
+      });
+    });
+  }
+
+  function renderDetail(r) {
+    const stages = r.stages || {};
+    const names = orderedStages([r]);
+    let html = "";
+    for (const name of names) {
+      const st = stages[name];
+      if (!st) continue;
+      const verdict = st.passed ? '<span class="pass">pass</span>' : '<span class="fail">fail</span>';
+      const tags = (st.tags || []).map(t => '<span class="chip">' + esc(t) + '</span>').join('');
+      html += '<div class="stage-detail"><span class="name">' + esc(name) + '</span> &middot; '
+            + 'score ' + Number(st.score).toFixed(2) + ' &middot; weight ' + esc(st.weight) + ' &middot; ' + verdict
+            + ' ' + tags;
+      if (st.details && Object.keys(st.details).length) {
+        html += '<pre>' + esc(JSON.stringify(st.details, null, 2)) + '</pre>';
+      }
+      html += '</div>';
+    }
+    return html || '<span class="empty">No stage detail.</span>';
+  }
+
+  function showError(msg) {
+    const box = document.getElementById("error-box");
+    box.textContent = "Could not render report: " + msg;
+    box.hidden = false;
+  }
+  function clearError() { document.getElementById("error-box").hidden = true; }
+
+  function render(data) {
+    const rows = normalize(data);
+    if (rows === null) { showError("unrecognized report shape (expected an array of rows, or {rows: [...]})"); return; }
+    clearError();
+    renderMatrix(rows);
+    renderRows(rows);
+  }
+
+  document.getElementById("file-input").addEventListener("change", (ev) => {
+    const file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try { render(JSON.parse(reader.result)); }
+      catch (e) { showError(e.message); }
+    };
+    reader.onerror = () => showError("could not read file");
+    reader.readAsText(file);
+  });
+
+  if (EMBEDDED_REPORT) render(EMBEDDED_REPORT); else render([]);
+</script>
+</body>
+</html>
