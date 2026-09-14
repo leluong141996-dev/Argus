@@ -18,12 +18,12 @@
 
 ---
 
-> **Project status (alpha).** Today the repo ships one complete vertical slice —
-> pipeline-style scoring and the reference `agent_reasoning` plugin. The CLI,
-> config layer, provider adapters, additional plugins, trust machinery
-> (baselines/gates/datasets), and the web dashboard described below are the
-> *target* design and are still being built. See the [Roadmap](#roadmap)
-> for what exists versus what is planned.
+> **Project status (alpha).** The repo runs end-to-end today: pipeline-style
+> scoring, the reference `agent_reasoning` plugin, a YAML config layer, mock and
+> Groq providers, and the `argus run` CLI that writes row-level records to JSON.
+> Additional plugins, the trust machinery (baselines/gates/datasets), and the
+> web dashboard described below are the *target* design and are still being
+> built. See the [Roadmap](#roadmap) for what exists versus what is planned.
 
 ## Why ARGUS
 
@@ -152,9 +152,9 @@ Everything runs client-side in the browser — nothing is uploaded anywhere.
 
 ## Project structure
 
-> **Note:** this is the *target* layout. Many directories below (`configs/`,
-> `core/providers/`, `datasets/`, `baselines/`, `gates/`, most `plugins/`, and
-> `dashboards/web/`) are planned, not yet present.
+> **Note:** this is the *target* layout. Some directories below (`baselines/`,
+> `gates/`, `datasets/certification/`, `dashboards/web/`, and the `plugins/`
+> other than `agent_reasoning`) are planned, not yet present.
 
 ```
 argus/
@@ -204,28 +204,40 @@ argus/
 
 ## Quick start
 
-> **Note:** the `argus` CLI is planned (see the [Roadmap](#roadmap))
-> and not installable yet. What runs today is the no-dependency demo:
->
-> ```bash
-> python examples/run_pipeline_demo.py   # stage-by-stage scoring, no API key
-> pytest                                 # the scoring contract's tests
-> ```
->
-> The commands below describe the target CLI.
-
 ```bash
 git clone https://github.com/leluong141996-dev/Argus.git
 cd Argus
-pip install -r requirements.txt
+pip install -e .          # installs the `argus` CLI and its deps (PyYAML, httpx)
+```
 
-# Run a task against one or more providers defined in the config
-argus run --config configs/agent_reasoning.yaml
+Run the reference task end-to-end. The shipped `configs/agent_reasoning.yaml`
+uses the Groq provider; switch `provider.name` to `mock` in the config for a
+fully offline, no-API-key run.
 
-# Run the shortcut baselines to sanity-check the scorer before trusting results
-argus run --config configs/agent_reasoning.yaml --baselines-only
+```bash
+# Deterministic mock provider — no network, no key (set provider.name: mock)
+argus run --config configs/agent_reasoning.yaml --out report.json
 
-# Generate a dashboard from the latest run
+# Against a real provider (Groq, OpenAI-compatible)
+export GROQ_API_KEY=...
+argus run --config configs/agent_reasoning.yaml --out report.json
+```
+
+Each run writes one `RowRecord` per case × model to the output JSON. The
+no-dependency demo and the test suite still run without any install:
+
+```bash
+python examples/run_pipeline_demo.py   # stage-by-stage scoring walkthrough, no API key
+pytest                                 # the scoring contract's tests
+```
+
+Two commands earlier drafts promised are still on the [roadmap](#roadmap):
+
+```bash
+# Planned: run the shortcut baselines and assert which ones must fail
+argus run --config configs/agent_reasoning.yaml --baselines-only   # currently exits with a "planned" notice
+
+# Planned: print a console summary for a past run
 argus report --run-id <run_id>
 ```
 
