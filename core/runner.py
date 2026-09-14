@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import time
 import uuid
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from typing import Any, Callable
 
@@ -104,10 +104,16 @@ def run_batch(
     model_calls: dict[str, Callable[[str], str]],
     run_configs: dict[str, RunConfig],
     concurrency: int = 1,
+    on_result: Callable[[RowRecord], None] | None = None,
+    should_cancel: Callable[[], bool] | None = None,
 ) -> list[RowRecord]:
     """Run every (case, model) pair. A failure in one unit becomes a record
     with `skip_reason` set, so one bad case never aborts the whole run.
-    Results are returned sorted by (case_id, model) for reproducibility."""
+    Results are returned sorted by (case_id, model) for reproducibility.
+
+    on_result, if given, is invoked on the main thread once per finished unit.
+    should_cancel, if given, is polled between finished units; when it returns
+    True, not-yet-started units are cancelled and partial results returned."""
     units = [(case, model) for case in cases for model in model_calls]
 
     def _one(unit: tuple[dict[str, Any], str]) -> RowRecord:
@@ -132,8 +138,18 @@ def run_batch(
                 skip_reason=f"{type(e).__name__}: {e}",
             )
 
+    records: list[RowRecord] = []
     with ThreadPoolExecutor(max_workers=max(1, concurrency)) as pool:
-        records = list(pool.map(_one, units))
+        futures = [pool.submit(_one, u) for u in units]
+        for fut in as_completed(futures):
+            if should_cancel is not None and should_cancel():
+                for f in futures:
+                    f.cancel()
+                break
+            rec = fut.result()
+            if on_result is not None:
+                on_result(rec)
+            records.append(rec)
 
     records.sort(key=lambda r: (r.case_id, r.model))
     return records
