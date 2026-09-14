@@ -5,7 +5,25 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from core.dataset import load_cases, DatasetError  # noqa: E402
+from core.dataset import load_cases, DatasetError, split_of  # noqa: E402
+
+
+def test_split_of_classifies_known_roots():
+    assert split_of("datasets/teaching/agent_reasoning/cases.json") == "teaching"
+    assert split_of("datasets/canary/agent_reasoning/cases.json") == "canary"
+    assert split_of("datasets/certification/agent_reasoning/cases.json") == "certification"
+
+
+def test_split_of_normalizes_and_handles_prefix():
+    assert split_of("datasets/../datasets/teaching/x/cases.json") == "teaching"
+    assert split_of("/home/u/Argus/datasets/teaching/x/cases.json") == "teaching"
+    assert split_of("./datasets/canary/x/cases.json") == "canary"
+
+
+def test_split_of_returns_none_for_unknown():
+    assert split_of("nope/x.json") is None
+    assert split_of("datasets/unknown/x/cases.json") is None
+    assert split_of("datasets/cases.json") is None  # no split segment after datasets
 
 
 def test_loads_seeded_agent_reasoning_cases():
