@@ -1,0 +1,14 @@
+{
+  "task": "agentic_coding",
+  "cases": [
+    {
+      "case_id": "canary-trivial-fix",
+      "description": "Make greet() return the string 'hello'.",
+      "repo_files": {"greet.py": "def greet():\n    return ''\n"},
+      "visible_tests": {"test_visible.py": "from greet import greet\n\n\ndef test_greet():\n    assert greet() == 'hello'\n"},
+      "hidden_tests": {"test_hidden.py": "from greet import greet\n\n\ndef test_type():\n    assert isinstance(greet(), str)\n"},
+      "allowed_paths": ["greet.py"],
+      "expected": {"files": {"greet.py": "def greet():\n    return 'hello'\n"}}
+    }
+  ]
+}

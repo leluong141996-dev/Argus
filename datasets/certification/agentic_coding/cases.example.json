@@ -1,0 +1,15 @@
+{
+  "task": "agentic_coding",
+  "cases": [
+    {
+      "case_id": "cert-example-001",
+      "description": "REPLACE ME — a held-out repository-fix task.",
+      "repo_files": {"module.py": "def solve():\n    return None\n"},
+      "visible_tests": {"test_visible.py": "from module import solve\n\n\ndef test_visible():\n    assert solve() == 1\n"},
+      "hidden_tests": {"test_hidden.py": "from module import solve\n\n\ndef test_hidden_invariant():\n    assert solve() > 0\n"},
+      "allowed_paths": ["module.py"],
+      "expected": {"files": {"module.py": "def solve():\n    return 1\n"}},
+      "baselines": {"overfit_visible": {"module.py": "def solve():\n    return 1\n"}}
+    }
+  ]
+}

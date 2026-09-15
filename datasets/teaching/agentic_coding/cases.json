@@ -1,0 +1,48 @@
+{
+  "task": "agentic_coding",
+  "cases": [
+    {
+      "case_id": "ac-idempotent-001",
+      "description": "Implement apply_credit(account, amount, request_id) so a single credit adds the amount to account['balance'] AND repeated calls with the same request_id are idempotent (do not double-credit). account has 'balance' (int) and 'seen' (a set of request_ids).",
+      "repo_files": {
+        "bank.py": "def apply_credit(account, amount, request_id):\n    return None\n"
+      },
+      "visible_tests": {
+        "test_visible.py": "from bank import apply_credit\n\n\ndef test_credit_adds():\n    acct = {'balance': 0, 'seen': set()}\n    assert apply_credit(acct, 10, 'r1') == 10\n    assert acct['balance'] == 10\n"
+      },
+      "hidden_tests": {
+        "test_hidden.py": "from bank import apply_credit\n\n\ndef test_idempotent():\n    acct = {'balance': 0, 'seen': set()}\n    apply_credit(acct, 10, 'r1')\n    apply_credit(acct, 10, 'r1')\n    assert acct['balance'] == 10\n"
+      },
+      "allowed_paths": ["bank.py"],
+      "expected": {
+        "files": {
+          "bank.py": "def apply_credit(account, amount, request_id):\n    if request_id in account['seen']:\n        return account['balance']\n    account['seen'].add(request_id)\n    account['balance'] += amount\n    return account['balance']\n"
+        }
+      },
+      "baselines": {
+        "overfit_visible": {
+          "bank.py": "def apply_credit(account, amount, request_id):\n    account['balance'] += amount\n    return account['balance']\n"
+        }
+      }
+    },
+    {
+      "case_id": "ac-clamp-001",
+      "description": "Fix clamp(x, lo, hi) so it returns x constrained to the inclusive range [lo, hi]: values below lo become lo, values above hi become hi, values inside are unchanged.",
+      "repo_files": {
+        "clamp.py": "def clamp(x, lo, hi):\n    return x\n"
+      },
+      "visible_tests": {
+        "test_visible.py": "from clamp import clamp\n\n\ndef test_below_floor():\n    assert clamp(-3, 0, 10) == 0\n"
+      },
+      "hidden_tests": {
+        "test_hidden.py": "from clamp import clamp\n\n\ndef test_above_ceiling():\n    assert clamp(20, 0, 10) == 10\n\n\ndef test_inside_unchanged():\n    assert clamp(5, 0, 10) == 5\n"
+      },
+      "allowed_paths": ["clamp.py"],
+      "expected": {
+        "files": {
+          "clamp.py": "def clamp(x, lo, hi):\n    return max(lo, min(hi, x))\n"
+        }
+      }
+    }
+  ]
+}

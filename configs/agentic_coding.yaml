@@ -1,0 +1,15 @@
+run_id: null
+task: agentic_coding
+dataset: datasets/teaching/agentic_coding/cases.json
+models:
+  - openai/gpt-oss-120b
+provider:
+  name: mock                 # switch to "groq" for a real run
+  params:
+    temperature: 0
+    max_tokens: 1024
+concurrency: 2
+seed: null
+output: report.json
+cost_budget_usd: null
+latency_budget_ms: null
