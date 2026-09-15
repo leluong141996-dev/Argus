@@ -53,3 +53,17 @@ def test_post_run_then_poll_until_done(client):
 def test_bad_config_returns_400(client):
     r = client.post("/api/runs", json={"config": "nope.yaml", "run_gate": False})
     assert r.status_code == 400
+
+
+def test_path_traversal_relative_returns_400(client):
+    r = client.post("/api/runs", json={"config": "../../etc/passwd.yaml", "run_gate": False})
+    assert r.status_code == 400
+    assert not any(
+        m.get("status") == "running"
+        for m in client.get("/api/runs").json()
+    )
+
+
+def test_path_traversal_absolute_returns_400(client):
+    r = client.post("/api/runs", json={"config": "/etc/passwd", "run_gate": False})
+    assert r.status_code == 400

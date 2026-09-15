@@ -33,7 +33,7 @@ export function RowTable({ rows }: { rows: RowRecord[] }) {
               <tr className="clickable" onClick={() => setOpen(open === key ? null : key)}>
                 <td>{r.case_id}</td><td>{r.model}</td>
                 <td className={passed ? "pass" : "fail"}>{r.capped_by ?? (r.skip_reason ? "skip" : "pass")}</td>
-                <td>{r.legacy_score.toFixed(2)}</td>
+                <td>{r.legacy_score == null ? "—" : r.legacy_score.toFixed(2)}</td>
                 <td>{r.failure_tags.join(", ")}</td>
                 <td>{r.latency_ms.toFixed(1)} ms</td>
               </tr>

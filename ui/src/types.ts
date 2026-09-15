@@ -5,7 +5,7 @@ export interface StageResult {
 export interface RowRecord {
   case_id: string; task: string; model: string; provider: string;
   stages: Record<string, StageResult>;
-  capped_by: string | null; legacy_score: number;
+  capped_by: string | null; legacy_score: number | null;
   failure_tags: string[]; tokens_in: number; tokens_out: number;
   latency_ms: number; run_id: string | null; skip_reason: string | null;
 }
@@ -19,7 +19,7 @@ export interface RunMeta {
 export type RunEvent =
   | { type: "gate"; status: "pass" | "fail" }
   | { type: "start"; total: number }
-  | { type: "result"; case_id: string; model: string; capped_by: string | null; legacy_score: number; skip_reason: string | null }
+  | { type: "result"; case_id: string; model: string; capped_by: string | null; legacy_score: number | null; skip_reason: string | null }
   | { type: "cancelled"; done: number }
   | { type: "done"; run_id: string; passed: number; failed: number }
   | { type: "error"; message: string };

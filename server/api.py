@@ -148,6 +148,13 @@ def build_router(store: RunStore, registry: RunRegistry) -> APIRouter:
     @router.post("/runs")
     def create_run(req: RunRequest, request: Request):
         from core.runner import new_run_id
+        if (
+            not req.config
+            or req.config in (".", "..")
+            or os.path.basename(req.config) != req.config
+            or os.path.isabs(req.config)
+        ):
+            raise HTTPException(status_code=400, detail="invalid config name: must be a plain filename with no path separators")
         try:
             cfg = load_config(os.path.join(CONFIG_DIR, req.config))
         except (ConfigError, DatasetError, UnknownTaskError) as e:
