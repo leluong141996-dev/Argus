@@ -38,6 +38,24 @@ def test_overfit_visible_is_the_hidden_stage_teeth():
     assert ov.passed
 
 
+def test_overfit_visible_per_stage_visible_pass_hidden_fail():
+    # Regression guard: the ac-idempotent-001 overfit patch must pass the
+    # visible suite and be caught ONLY by the hidden (SAFETY) stage. If a
+    # future edit makes it also fail visible, the gate-level teeth test would
+    # still pass but the anti-gaming guarantee would be hollow -- this asserts
+    # the real per-stage shape.
+    from core.pipeline import Stage
+    from plugins.base import GenerationResult
+    case = next(c for c in load_cases(TEACHING) if c["case_id"] == "ac-idempotent-001")
+    files = case["baselines"]["overfit_visible"]
+    result = GenerationResult(raw_output=json.dumps({"files": files}),
+                              parsed_output={"files": files}, tokens_in=1, tokens_out=1)
+    stages = {r.stage: r for r in AgenticCodingPlugin().score(case, result)}
+    assert stages[Stage.ACTION_SELECTION].passed
+    assert stages[Stage.REASONING].passed          # visible tests genuinely pass
+    assert not stages[Stage.SAFETY].passed         # only the hidden stage catches it
+
+
 def test_gate_has_teeth_catches_scorer_hole():
     # An oracle-correct output declared should_pass=False simulates a scorer
     # hole: the gate must report a mismatch (not vacuously pass).
