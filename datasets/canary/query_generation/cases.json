@@ -1,0 +1,37 @@
+{
+  "task": "query_generation",
+  "cases": [
+    {
+      "case_id": "qg-canary-trivial",
+      "request": "How many trips were there?",
+      "schema": {
+        "metrics": ["trip_count", "revenue"],
+        "dimensions": ["city"],
+        "filters": ["month"]
+      },
+      "constraints": {},
+      "rubric": {
+        "criteria": "Count of trips.",
+        "must_include": [{"field": "metric", "value": "trip_count"}],
+        "must_exclude": []
+      },
+      "expected": {"query": {"metric": "trip_count", "group_by": [], "filters": {}}}
+    },
+    {
+      "case_id": "qg-canary-revenue",
+      "request": "What is total revenue?",
+      "schema": {
+        "metrics": ["trip_count", "revenue"],
+        "dimensions": ["city"],
+        "filters": ["month"]
+      },
+      "constraints": {},
+      "rubric": {
+        "criteria": "Total revenue.",
+        "must_include": [{"field": "metric", "value": "revenue"}],
+        "must_exclude": []
+      },
+      "expected": {"query": {"metric": "revenue", "group_by": [], "filters": {}}}
+    }
+  ]
+}

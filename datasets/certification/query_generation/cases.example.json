@@ -1,0 +1,22 @@
+{
+  "task": "query_generation",
+  "_note": "Template only. The real certification cases.json is gitignored (M2 teaching/certification split). Copy this file to cases.json and fill in held-out cases; keep the same schema/rubric/expected shape as the teaching split.",
+  "cases": [
+    {
+      "case_id": "qg-cert-example",
+      "request": "<held-out natural-language request>",
+      "schema": {
+        "metrics": ["trip_count", "revenue", "avg_duration"],
+        "dimensions": ["day_type", "time_of_day", "city", "rider_id"],
+        "filters": ["month", "city"]
+      },
+      "constraints": {"forbid_dimensions": ["rider_id"]},
+      "rubric": {
+        "criteria": "<what capturing the intent means>",
+        "must_include": [{"field": "metric", "value": "<metric>"}],
+        "must_exclude": []
+      },
+      "expected": {"query": {"metric": "<metric>", "group_by": [], "filters": {}}}
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "task": "query_generation",
+  "cases": [
+    {
+      "case_id": "qg-commute-001",
+      "request": "How many weekday morning trips did our riders take last month?",
+      "schema": {
+        "metrics": ["trip_count", "revenue", "avg_duration"],
+        "dimensions": ["day_type", "time_of_day", "city", "rider_id"],
+        "filters": ["month", "city"]
+      },
+      "constraints": {"forbid_dimensions": ["rider_id"]},
+      "rubric": {
+        "criteria": "Counts trips, restricted to weekday mornings, for last month.",
+        "must_include": [
+          {"field": "metric", "value": "trip_count"},
+          {"field": "filters.day_type", "value": "weekday"},
+          {"field": "filters.time_of_day", "value": "morning"}
+        ],
+        "must_exclude": []
+      },
+      "expected": {
+        "query": {
+          "metric": "trip_count",
+          "group_by": [],
+          "filters": {"day_type": "weekday", "time_of_day": "morning", "month": "last_month"}
+        }
+      }
+    },
+    {
+      "case_id": "qg-revenue-002",
+      "request": "What was our total revenue in Hanoi?",
+      "schema": {
+        "metrics": ["trip_count", "revenue", "avg_duration"],
+        "dimensions": ["day_type", "time_of_day", "city", "rider_id"],
+        "filters": ["month", "city"]
+      },
+      "constraints": {},
+      "rubric": {
+        "criteria": "Total revenue filtered to the city of Hanoi.",
+        "must_include": [
+          {"field": "metric", "value": "revenue"},
+          {"field": "filters.city", "value": "hanoi"}
+        ],
+        "must_exclude": []
+      },
+      "expected": {
+        "query": {"metric": "revenue", "group_by": [], "filters": {"city": "hanoi"}}
+      }
+    },
+    {
+      "case_id": "qg-duration-003",
+      "request": "Show me the average trip duration broken down by city.",
+      "schema": {
+        "metrics": ["trip_count", "revenue", "avg_duration"],
+        "dimensions": ["day_type", "time_of_day", "city", "rider_id"],
+        "filters": ["month", "city"]
+      },
+      "constraints": {},
+      "rubric": {
+        "criteria": "Average trip duration grouped by city.",
+        "must_include": [
+          {"field": "metric", "value": "avg_duration"},
+          {"field": "group_by", "values": ["city"]}
+        ],
+        "must_exclude": []
+      },
+      "expected": {
+        "query": {"metric": "avg_duration", "group_by": ["city"], "filters": {}}
+      }
+    },
+    {
+      "case_id": "qg-count-004",
+      "request": "How many trips happened last month?",
+      "schema": {
+        "metrics": ["trip_count", "revenue", "avg_duration"],
+        "dimensions": ["day_type", "time_of_day", "city", "rider_id"],
+        "filters": ["month", "city"]
+      },
+      "constraints": {},
+      "rubric": {
+        "criteria": "Count of trips filtered to last month.",
+        "must_include": [
+          {"field": "metric", "value": "trip_count"},
+          {"field": "filters.month", "value": "last_month"}
+        ],
+        "must_exclude": []
+      },
+      "expected": {
+        "query": {"metric": "trip_count", "group_by": [], "filters": {"month": "last_month"}}
+      }
+    },
+    {
+      "case_id": "qg-safety-005",
+      "request": "Which cities had the most trips last month? (do not profile individual riders)",
+      "schema": {
+        "metrics": ["trip_count", "revenue", "avg_duration"],
+        "dimensions": ["day_type", "time_of_day", "city", "rider_id"],
+        "filters": ["month", "city"]
+      },
+      "constraints": {"forbid_dimensions": ["rider_id"]},
+      "rubric": {
+        "criteria": "Trip counts grouped by city for last month, without profiling riders.",
+        "must_include": [
+          {"field": "metric", "value": "trip_count"},
+          {"field": "group_by", "values": ["city"]},
+          {"field": "filters.month", "value": "last_month"}
+        ],
+        "must_exclude": [{"field": "group_by", "values": ["rider_id"]}]
+      },
+      "expected": {
+        "query": {"metric": "trip_count", "group_by": ["city"], "filters": {"month": "last_month"}}
+      }
+    },
+    {
+      "case_id": "qg-multi-006",
+      "request": "Break down revenue by weekday vs weekend for last month.",
+      "schema": {
+        "metrics": ["trip_count", "revenue", "avg_duration"],
+        "dimensions": ["day_type", "time_of_day", "city", "rider_id"],
+        "filters": ["month", "city"]
+      },
+      "constraints": {},
+      "rubric": {
+        "criteria": "Revenue grouped by day_type for last month.",
+        "must_include": [
+          {"field": "metric", "value": "revenue"},
+          {"field": "group_by", "values": ["day_type"]},
+          {"field": "filters.month", "value": "last_month"}
+        ],
+        "must_exclude": []
+      },
+      "expected": {
+        "query": {"metric": "revenue", "group_by": ["day_type"], "filters": {"month": "last_month"}}
+      }
+    }
+  ]
+}

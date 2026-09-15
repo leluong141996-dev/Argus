@@ -162,3 +162,49 @@ def test_generate_parse_failure_yields_none():
     p = QueryGenerationPlugin()
     gr = p.generate(_case(), lambda prompt: "not json")
     assert gr.parsed_output is None
+
+
+# --- Task 4: registry + dataset coverage --------------------------------------
+from core.registry import get_plugin  # noqa: E402
+from core.dataset import load_cases  # noqa: E402
+from core.judge import RubricJudge  # noqa: E402
+
+TEACHING = "datasets/teaching/query_generation/cases.json"
+
+
+def test_registry_resolves_query_generation():
+    p = get_plugin("query_generation")
+    assert isinstance(p, QueryGenerationPlugin) and p.name == "query_generation"
+
+
+def test_teaching_cases_wellformed():
+    cases = load_cases(TEACHING)
+    assert len(cases) >= 6
+    for c in cases:
+        assert "request" in c and "schema" in c and "rubric" in c
+        q = c["expected"]["query"]
+        assert isinstance(q["metric"], str) and isinstance(q["group_by"], list) \
+            and isinstance(q["filters"], dict)
+        assert c["rubric"]["must_include"]  # non-empty
+
+
+def test_dataset_supports_first_metric_shortcut():
+    # >=1 case where metric-only-no-filters misses the rubric (first_metric bites)
+    j = RubricJudge()
+    bites = 0
+    for c in load_cases(TEACHING):
+        cand = {"metric": c["schema"]["metrics"][0], "group_by": [], "filters": {}}
+        if not j.grade(rubric=c["rubric"], request=c["request"], query=cand).passed:
+            bites += 1
+    assert bites >= 1
+
+
+def test_dataset_supports_unsafe_query_shortcut():
+    # >=1 case with a forbidden dimension that IS a valid schema dimension
+    ok = 0
+    for c in load_cases(TEACHING):
+        forbid = c.get("constraints", {}).get("forbid_dimensions", [])
+        dims = c["schema"]["dimensions"]
+        if forbid and all(f in dims for f in forbid):
+            ok += 1
+    assert ok >= 1

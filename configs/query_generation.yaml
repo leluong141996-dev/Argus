@@ -1,0 +1,24 @@
+run_id: null
+task: query_generation
+dataset: datasets/teaching/query_generation/cases.json
+models:
+  - openai/gpt-oss-120b
+provider:
+  name: mock                 # switch to "groq" for a real run
+  params:
+    temperature: 0
+    max_tokens: 512
+concurrency: 2
+seed: null
+output: report.json
+cost_budget_usd: null
+latency_budget_ms: null
+# Intent (REASONING) is scored by a deterministic RubricJudge by default, so
+# `argus run` and `--baselines-only` are fully offline. Uncomment to grade
+# intent with a real LLM judge on a real run (injected only after the gate):
+# judge:
+#   provider:
+#     name: groq
+#     params:
+#       temperature: 0
+#   model: openai/gpt-oss-120b
