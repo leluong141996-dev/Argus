@@ -95,7 +95,9 @@ class ToolUsePlugin(TaskPlugin):
         expected = case["expected"].get("tool", O.ABSTAIN)
         expected_args = case["expected"].get("arguments", {}) or {}
         chosen = parsed.get("tool", O.ABSTAIN)
-        args = parsed.get("arguments") or {}
+        args = parsed.get("arguments")
+        if not isinstance(args, dict):
+            args = {}
 
         return [
             self._score_action(chosen, expected, available),
@@ -144,8 +146,11 @@ class ToolUsePlugin(TaskPlugin):
             details["unknown"] = sorted(unknown)
 
         if chosen == expected:
+            # A missing expected-value key is itself a mismatch; guarding it
+            # also avoids normalize(None) == "none" falsely matching an
+            # optional param whose expected value is literally "none".
             mismatched = [k for k, v in expected_args.items()
-                          if O.normalize(args.get(k)) != O.normalize(v)]
+                          if k not in args or O.normalize(args[k]) != O.normalize(v)]
             if mismatched:
                 tags.append(O.WRONG_PARAM_VALUE)
                 details["mismatched"] = sorted(mismatched)

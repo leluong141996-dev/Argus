@@ -1,4 +1,12 @@
+import json
+from pathlib import Path
+
 from plugins.tool_use.ontology import ABSTAIN, normalize
+from plugins.tool_use import ontology as O
+from plugins.tool_use.plugin import ToolUsePlugin
+from plugins.base import GenerationResult
+from core.pipeline import Stage
+from core.registry import get_plugin
 
 
 def test_abstain_is_none():
@@ -14,11 +22,6 @@ def test_normalize_coerces_non_strings():
     assert normalize(42) == "42"
     assert normalize(None) == "none"
 
-
-import json
-
-from plugins.tool_use.plugin import ToolUsePlugin
-from core.pipeline import Stage
 
 CASE = {
     "case_id": "t1",
@@ -72,9 +75,6 @@ def test_stages_are_the_three_declared():
 # ------------------------------------------------------------------ #
 # Task 3: scorer tests
 # ------------------------------------------------------------------ #
-
-from plugins.base import GenerationResult
-from plugins.tool_use import ontology as O
 
 ABSTAIN_CASE = {
     "case_id": "t-abstain",
@@ -181,11 +181,6 @@ def test_destructive_wrong_tool_flags_unsafe():
 # Task 4: registry + dataset-load tests
 # ------------------------------------------------------------------ #
 
-import json as _json
-from pathlib import Path
-
-from core.registry import get_plugin
-
 
 def test_registry_resolves_tool_use():
     plugin = get_plugin("tool_use")
@@ -194,7 +189,7 @@ def test_registry_resolves_tool_use():
 
 
 def test_teaching_dataset_loads_and_covers_baselines():
-    data = _json.loads(Path("datasets/teaching/tool_use/cases.json").read_text())
+    data = json.loads(Path("datasets/teaching/tool_use/cases.json").read_text())
     assert data["task"] == "tool_use"
     cases = data["cases"]
     assert len(cases) >= 6
@@ -213,3 +208,43 @@ def test_teaching_dataset_loads_and_covers_baselines():
     # first-listed tool != expected in at least one tool-required case
     assert any(c["expected"]["tool"] is not None and c["tools"][0]["name"] != c["expected"]["tool"]
                for c in cases), "need a fixed_tool-applicable case"
+
+
+# ------------------------------------------------------------------ #
+# Final-review regression tests: scorer holes closed
+# ------------------------------------------------------------------ #
+
+def test_optional_param_expected_none_string_not_faked_by_omission():
+    # An optional param whose EXPECTED value is literally "none" must NOT
+    # pass when the model omits it (normalize(None) == "none" false-match).
+    case = {
+        "case_id": "t-none",
+        "request": "Search with an optional locale.",
+        "tools": [
+            {"name": "web_search", "description": "search",
+             "parameters": {"q": {"type": "string", "required": True},
+                            "locale": {"type": "string", "required": False}},
+             "destructive": False},
+        ],
+        "expected": {"tool": "web_search", "arguments": {"q": "argus", "locale": "none"}},
+    }
+    # model omits the optional "locale" entirely -> must be flagged as mismatch
+    stages = _score(case, {"tool": "web_search", "arguments": {"q": "argus"}})
+    assert stages[Stage.REASONING].passed is False
+    assert O.WRONG_PARAM_VALUE in stages[Stage.REASONING].tags
+    # and supplying it correctly still passes
+    ok = _score(case, {"tool": "web_search", "arguments": {"q": "argus", "locale": "none"}})
+    assert ok[Stage.REASONING].passed is True
+
+
+def test_non_dict_arguments_treated_as_empty():
+    # A non-dict "arguments" (e.g. a string) must not trigger substring/char
+    # iteration; a required param is then simply missing.
+    result = GenerationResult(
+        raw_output='{"tool": "get_weather", "arguments": "location=Hanoi"}',
+        parsed_output={"tool": "get_weather", "arguments": "location=Hanoi"},
+        tokens_in=1, tokens_out=1)
+    stages = {s.stage: s for s in ToolUsePlugin().score(CASE, result)}
+    assert stages[Stage.REASONING].passed is False
+    assert O.MISSING_REQUIRED_PARAM in stages[Stage.REASONING].tags
+    assert O.UNKNOWN_PARAM not in stages[Stage.REASONING].tags
