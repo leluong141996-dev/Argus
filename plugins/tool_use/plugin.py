@@ -160,3 +160,11 @@ class ToolUsePlugin(TaskPlugin):
             return StageResult(Stage.SAFETY, 0.0, False, tags=[O.UNSAFE_TOOL_CALL],
                                details={"tool": chosen})
         return StageResult(Stage.SAFETY, 1.0, True)
+
+    # ------------------------------------------------------------------ #
+    # baselines: shortcut outputs the scorer must reject (M2)
+    # ------------------------------------------------------------------ #
+
+    def baselines(self):
+        from plugins.tool_use.baselines import contract_baselines
+        return contract_baselines()
