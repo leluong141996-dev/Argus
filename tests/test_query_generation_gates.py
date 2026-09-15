@@ -76,3 +76,48 @@ def test_judge_section_injects_llm_judge(monkeypatch):
     cfg = _cfg(judge=JudgeConfig(provider=ProviderConfig(name="mock"), model="jm"))
     execute_run(cfg, run_gate=False)
     assert isinstance(captured["plugin"].judge, LLMJudge)
+
+
+# --- baseline gate ------------------------------------------------------------
+import json  # noqa: E402
+from core.dataset import load_cases  # noqa: E402
+from core.runner import RunConfig  # noqa: E402
+from baselines.base import Baseline, Expectation  # noqa: E402
+from plugins.query_generation.plugin import QueryGenerationPlugin  # noqa: E402
+from gates.baseline_gate import run_baseline_gate  # noqa: E402
+
+TEACHING = "datasets/teaching/query_generation/cases.json"
+
+
+def _rc():
+    return RunConfig(run_id="gate-test", model="baseline", provider="test")
+
+
+def test_real_baselines_all_pass():
+    plugin = QueryGenerationPlugin()  # default RubricJudge -> hermetic
+    result = run_baseline_gate(plugin, load_cases(TEACHING), _rc())
+    assert result.passed, [(c.name, c.detail) for c in result.checks if not c.passed]
+    assert {c.name for c in result.checks} == {
+        "empty_output", "unknown_metric", "first_metric", "unsafe_query", "oracle"
+    }
+
+
+def test_first_metric_check_is_the_judge_stage_teeth():
+    # The first_metric shortcut is caught only by REASONING (judge) -> its
+    # gate check must pass, proving the judge stage is a real gate.
+    plugin = QueryGenerationPlugin()
+    result = run_baseline_gate(plugin, load_cases(TEACHING), _rc())
+    fm = next(c for c in result.checks if c.name == "first_metric")
+    assert fm.passed
+
+
+def test_gate_has_teeth_catches_scorer_hole():
+    # An oracle-correct output declared should_pass=False simulates a scorer
+    # hole: the gate must report MISMATCH (not vacuously pass).
+    plugin = QueryGenerationPlugin()
+    sneaky = Baseline("sneaky",
+                      lambda case: json.dumps(case["expected"]["query"]),
+                      Expectation(should_pass=False))
+    plugin.baselines = lambda: [sneaky]  # type: ignore[method-assign]
+    result = run_baseline_gate(plugin, load_cases(TEACHING), _rc())
+    assert not result.passed
