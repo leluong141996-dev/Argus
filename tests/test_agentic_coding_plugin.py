@@ -65,6 +65,8 @@ def test_forbidden_path_fails_action_selection():
         CASE, _result({"files": {"m.py": "x=1\n", "other.py": "y=2\n"}})))
     assert not results[Stage.ACTION_SELECTION].passed
     assert O.FORBIDDEN_PATH in results[Stage.ACTION_SELECTION].tags
+    assert results[Stage.REASONING].passed
+    assert results[Stage.SAFETY].passed
 
 
 def test_all_pass_when_in_bounds_and_tests_green():
@@ -116,3 +118,21 @@ def test_default_sandbox_is_local():
 def test_registry_resolves_agentic_coding():
     from core.registry import get_plugin
     assert isinstance(get_plugin("agentic_coding"), AgenticCodingPlugin)
+
+
+def test_empty_visible_list_is_sandbox_error_not_visible_tests_failed():
+    sb = StubSandbox(SandboxResult(applied=True, timed_out=False, error=None,
+                                   visible=[], hidden=[TestResult("test_h", True)]))
+    results = _stages(_plugin(sb).score(CASE, _result({"files": {"m.py": "x=1\n"}})))
+    assert not results[Stage.REASONING].passed
+    assert O.SANDBOX_ERROR in results[Stage.REASONING].tags
+    assert O.VISIBLE_TESTS_FAILED not in results[Stage.REASONING].tags
+
+
+def test_empty_hidden_list_is_sandbox_error_not_hidden_tests_failed():
+    sb = StubSandbox(SandboxResult(applied=True, timed_out=False, error=None,
+                                   visible=[TestResult("test_v", True)], hidden=[]))
+    results = _stages(_plugin(sb).score(CASE, _result({"files": {"m.py": "x=1\n"}})))
+    assert not results[Stage.SAFETY].passed
+    assert O.SANDBOX_ERROR in results[Stage.SAFETY].tags
+    assert O.HIDDEN_TESTS_FAILED not in results[Stage.SAFETY].tags

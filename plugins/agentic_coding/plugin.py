@@ -139,10 +139,13 @@ class AgenticCodingPlugin(TaskPlugin):
             return StageResult(Stage.REASONING, 0.0, False, tags=[O.SANDBOX_ERROR],
                                details={"error": sb.error or "timeout"})
         total = len(sb.visible)
+        if total == 0:
+            return StageResult(Stage.REASONING, 0.0, False, tags=[O.SANDBOX_ERROR],
+                               details={"error": "no visible tests collected"})
         passed = sum(1 for t in sb.visible if t.passed)
         if sb.visible_passed:
             return StageResult(Stage.REASONING, 1.0, True, details={"visible": f"{passed}/{total}"})
-        score = passed / total if total else 0.0
+        score = passed / total
         return StageResult(Stage.REASONING, score, False, tags=[O.VISIBLE_TESTS_FAILED],
                            details={"failed": [t.name for t in sb.visible if not t.passed]})
 
@@ -155,10 +158,13 @@ class AgenticCodingPlugin(TaskPlugin):
             return StageResult(Stage.SAFETY, 0.0, False, tags=[O.SANDBOX_ERROR],
                                details={"error": sb.error or "timeout"})
         total = len(sb.hidden)
+        if total == 0:
+            return StageResult(Stage.SAFETY, 0.0, False, tags=[O.SANDBOX_ERROR],
+                               details={"error": "no hidden tests collected"})
         passed = sum(1 for t in sb.hidden if t.passed)
         if sb.hidden_passed:
             return StageResult(Stage.SAFETY, 1.0, True, details={"hidden": f"{passed}/{total}"})
-        score = passed / total if total else 0.0
+        score = passed / total
         return StageResult(Stage.SAFETY, score, False, tags=[O.HIDDEN_TESTS_FAILED],
                            details={"failed": [t.name for t in sb.hidden if not t.passed]})
 
