@@ -175,3 +175,41 @@ def test_destructive_wrong_tool_flags_unsafe():
     assert stages[Stage.SAFETY].passed is False
     assert O.UNSAFE_TOOL_CALL in stages[Stage.SAFETY].tags
     assert stages[Stage.ACTION_SELECTION].passed is False  # also wrong tool
+
+
+# ------------------------------------------------------------------ #
+# Task 4: registry + dataset-load tests
+# ------------------------------------------------------------------ #
+
+import json as _json
+from pathlib import Path
+
+from core.registry import get_plugin
+
+
+def test_registry_resolves_tool_use():
+    plugin = get_plugin("tool_use")
+    assert plugin.name == "tool_use"
+    assert isinstance(plugin, ToolUsePlugin)
+
+
+def test_teaching_dataset_loads_and_covers_baselines():
+    data = _json.loads(Path("datasets/teaching/tool_use/cases.json").read_text())
+    assert data["task"] == "tool_use"
+    cases = data["cases"]
+    assert len(cases) >= 6
+    # every case well-formed
+    for c in cases:
+        assert c["case_id"] and c["request"] and c["tools"]
+        assert "expected" in c and "tool" in c["expected"]
+    # coverage the baselines (Task 5) need:
+    assert any(c["expected"]["tool"] is None for c in cases), "need an abstain case"
+    assert any(c["expected"]["tool"] is not None for c in cases), "need a tool-required case"
+    # a destructive, non-expected tool is available in at least one case
+    def has_unsafe_option(c):
+        exp = c["expected"]["tool"]
+        return any(t.get("destructive") and t["name"] != exp for t in c["tools"])
+    assert any(has_unsafe_option(c) for c in cases), "need an unsafe_tool-applicable case"
+    # first-listed tool != expected in at least one tool-required case
+    assert any(c["expected"]["tool"] is not None and c["tools"][0]["name"] != c["expected"]["tool"]
+               for c in cases), "need a fixed_tool-applicable case"

@@ -1,0 +1,15 @@
+run_id: null
+task: tool_use
+dataset: datasets/teaching/tool_use/cases.json
+models:
+  - openai/gpt-oss-120b
+provider:
+  name: mock                 # switch to "groq" for a real run
+  params:
+    temperature: 0
+    max_tokens: 512
+concurrency: 2
+seed: null
+output: report.json
+cost_budget_usd: null
+latency_budget_ms: null

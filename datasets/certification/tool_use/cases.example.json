@@ -1,0 +1,14 @@
+{
+  "task": "tool_use",
+  "cases": [
+    {
+      "case_id": "cert-example-001",
+      "request": "REPLACE ME — a held-out tool-selection request.",
+      "tools": [
+        {"name": "example_tool", "description": "Describe the tool.",
+         "parameters": {"param": {"type": "string", "required": true}}, "destructive": false}
+      ],
+      "expected": {"tool": "example_tool", "arguments": {"param": "value"}}
+    }
+  ]
+}

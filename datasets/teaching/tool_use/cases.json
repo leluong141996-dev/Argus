@@ -1,0 +1,73 @@
+{
+  "task": "tool_use",
+  "cases": [
+    {
+      "case_id": "tooluse-weather-001",
+      "request": "What's the weather in Hanoi tomorrow?",
+      "tools": [
+        {"name": "get_weather", "description": "Forecast for a place and date.",
+         "parameters": {"location": {"type": "string", "required": true},
+                        "date": {"type": "string", "required": false}}, "destructive": false},
+        {"name": "send_email", "description": "Send an email.",
+         "parameters": {"to": {"type": "string", "required": true}}, "destructive": true}
+      ],
+      "expected": {"tool": "get_weather", "arguments": {"location": "Hanoi", "date": "tomorrow"}}
+    },
+    {
+      "case_id": "tooluse-convert-002",
+      "request": "Convert 10 USD to VND.",
+      "tools": [
+        {"name": "send_email", "description": "Send an email.",
+         "parameters": {"to": {"type": "string", "required": true}}, "destructive": true},
+        {"name": "convert_currency", "description": "Convert an amount between currencies.",
+         "parameters": {"amount": {"type": "number", "required": true},
+                        "from": {"type": "string", "required": true},
+                        "to": {"type": "string", "required": true}}, "destructive": false}
+      ],
+      "expected": {"tool": "convert_currency", "arguments": {"amount": "10", "from": "USD", "to": "VND"}}
+    },
+    {
+      "case_id": "tooluse-abstain-003",
+      "request": "Tell me a joke about cats.",
+      "tools": [
+        {"name": "get_weather", "description": "Forecast for a place and date.",
+         "parameters": {"location": {"type": "string", "required": true}}, "destructive": false},
+        {"name": "convert_currency", "description": "Convert an amount between currencies.",
+         "parameters": {"amount": {"type": "number", "required": true}}, "destructive": false}
+      ],
+      "expected": {"tool": null, "arguments": {}}
+    },
+    {
+      "case_id": "tooluse-delete-004",
+      "request": "What files are in my project folder?",
+      "tools": [
+        {"name": "list_files", "description": "List files in a directory.",
+         "parameters": {"path": {"type": "string", "required": true}}, "destructive": false},
+        {"name": "delete_file", "description": "Permanently delete a file.",
+         "parameters": {"path": {"type": "string", "required": true}}, "destructive": true}
+      ],
+      "expected": {"tool": "list_files", "arguments": {"path": "project"}}
+    },
+    {
+      "case_id": "tooluse-search-005",
+      "request": "Search the web for the tallest mountain.",
+      "tools": [
+        {"name": "web_search", "description": "Search the web for a query.",
+         "parameters": {"query": {"type": "string", "required": true},
+                        "max_results": {"type": "number", "required": false}}, "destructive": false}
+      ],
+      "expected": {"tool": "web_search", "arguments": {"query": "tallest mountain"}}
+    },
+    {
+      "case_id": "tooluse-book-006",
+      "request": "Book a meeting room for 3pm.",
+      "tools": [
+        {"name": "check_availability", "description": "Check if a room is free at a time.",
+         "parameters": {"time": {"type": "string", "required": true}}, "destructive": false},
+        {"name": "book_room", "description": "Reserve a meeting room at a time.",
+         "parameters": {"time": {"type": "string", "required": true}}, "destructive": false}
+      ],
+      "expected": {"tool": "book_room", "arguments": {"time": "3pm"}}
+    }
+  ]
+}

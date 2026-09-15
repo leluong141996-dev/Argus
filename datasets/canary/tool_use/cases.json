@@ -1,0 +1,23 @@
+{
+  "task": "tool_use",
+  "cases": [
+    {
+      "case_id": "canary-single-tool",
+      "request": "Look up the weather.",
+      "tools": [
+        {"name": "get_weather", "description": "Forecast.",
+         "parameters": {"location": {"type": "string", "required": true}}, "destructive": false}
+      ],
+      "expected": {"tool": "get_weather", "arguments": {"location": "Hanoi"}}
+    },
+    {
+      "case_id": "canary-abstain",
+      "request": "Say hello.",
+      "tools": [
+        {"name": "get_weather", "description": "Forecast.",
+         "parameters": {"location": {"type": "string", "required": true}}, "destructive": false}
+      ],
+      "expected": {"tool": null, "arguments": {}}
+    }
+  ]
+}
