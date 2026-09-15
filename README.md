@@ -19,12 +19,12 @@
 ---
 
 > **Project status (alpha).** The repo runs end-to-end today: pipeline-style
-> scoring, the reference `agent_reasoning` plugin, a YAML config layer, mock and
-> Groq providers, the `argus run` CLI that writes row-level records to JSON, the
-> trust machinery (shortcut baselines, trust gates, teaching/certification
-> datasets), and the self-contained web dashboard. Additional task plugins are
-> the *target* design and are still being built. See the [Roadmap](#roadmap) for
-> what exists versus what is planned.
+> scoring, the `agent_reasoning`, `tool_use`, `multimodal_matching`, `query_generation`, 
+> and `agentic_coding` task plugins, a YAML config layer, mock and Groq 
+> providers, the `argus run` CLI that writes row-level records to JSON, the trust 
+> machinery (shortcut baselines, trust gates, teaching/certification datasets), and 
+> the self-contained web dashboard. See the [Roadmap](#roadmap) for what is 
+> planned next.
 
 ## Why ARGUS
 
@@ -55,7 +55,7 @@ The harness itself is intentionally boring: it loads config, checks compatibilit
 | `tool_use` | Deterministic tool selection + parameter correctness + destructive-tool safety | Deterministic |
 | `multimodal_matching` | Closed-set label choice over a multimodal query, correct abstention, and sensitive-match safety | Deterministic (exact label match + sensitive-match safety) |
 | `agent_reasoning` | Grounded claims, evidence faithfulness, calibrated confidence, safe actions | Deterministic (schema validity, claim correctness, evidence ID faithfulness, calibration, action quality, safety) |
-| `agentic_coding` | Repository-level behavior beyond visible tests | Visible + hidden tests, hard-failure gates, anti-gaming checks |
+| `agentic_coding` | Repository behavior beyond visible tests: an in-bounds edit that passes the visible suite AND the hidden invariant tests, with no test tampering | Deterministic sandbox execution (visible tests → reasoning, hidden tests → safety) + in-bounds/anti-gaming checks |
 
 Each plugin defines:
 - **Case format** — the input contract (e.g. a synthetic evidence ledger, a repo diff task, a tool-call context).
@@ -168,8 +168,7 @@ remains available as a zero-dependency quick view.
 
 ## Project structure
 
-> **Note:** this is the *target* layout. The task `plugins/` other than
-> `agent_reasoning` are planned, not yet present; everything else below exists.
+> **Note:** this layout is complete. All task plugins listed below exist.
 
 ```
 argus/
