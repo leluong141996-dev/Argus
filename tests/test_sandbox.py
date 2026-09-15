@@ -57,7 +57,8 @@ def test_path_escape_is_rejected():
     sb = LocalSandbox()
     res = sb.run(repo_files=ADD_REPO, candidate_files={"../evil.py": "x = 1\n"},
                  visible_tests=VISIBLE, hidden_tests=HIDDEN, timeout_s=30)
-    assert not res.applied and res.error is not None
+    # H1: repo_files wrote successfully → applied=True; candidate was the bad actor
+    assert res.applied and res.error is not None
     assert not res.visible_passed
 
 
@@ -69,3 +70,22 @@ def test_stub_returns_canned_result():
                  timeout_s=1)
     assert res is canned
     assert res.visible_passed and not res.hidden_passed
+
+
+def test_stale_report_not_inherited_by_hidden_run():
+    # Regression for B1: a hidden pytest run that crashes before writing XML must NOT
+    # inherit the stale visible-run report. We force no XML by using os._exit in the
+    # hidden test file — the subprocess terminates immediately, no report is written.
+    # Without the `unlink` fix the visible XML would still exist and hidden_passed
+    # would silently return True; with the fix hidden_passed must be False and error set.
+    sb = LocalSandbox()
+    res = sb.run(
+        repo_files=ADD_REPO,
+        candidate_files={},
+        visible_tests=VISIBLE,
+        hidden_tests={"test_crash_hidden.py": "import os; os._exit(99)\n"},
+        timeout_s=30,
+    )
+    assert res.visible_passed
+    assert not res.hidden_passed
+    assert res.error is not None

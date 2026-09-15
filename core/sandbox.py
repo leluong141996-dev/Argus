@@ -30,6 +30,7 @@ from xml.etree import ElementTree as ET
 
 @dataclass
 class TestResult:
+    __test__ = False  # suppress PytestCollectionWarning (name starts with "Test")
     name: str
     passed: bool
 
@@ -90,7 +91,7 @@ class LocalSandbox(Sandbox):
             for group in (repo_files, candidate_files):
                 err = _write_files(root, group)
                 if err is not None:
-                    applied = group is not candidate_files  # fixture ok if candidate failed
+                    applied = group is candidate_files  # True only when repo wrote OK, candidate failed
                     return SandboxResult(applied=applied, timed_out=False, error=err,
                                          visible=[], hidden=[])
             for group in (visible_tests, hidden_tests):
@@ -99,31 +100,33 @@ class LocalSandbox(Sandbox):
                     return SandboxResult(applied=True, timed_out=False, error=err,
                                          visible=[], hidden=[])
 
-            visible, verr, vtimed = self._run_pytest(root, list(visible_tests), timeout_s)
-            hidden, herr, htimed = self._run_pytest(root, list(hidden_tests), timeout_s)
+            visible, verr, vtimed = self._run_pytest(root, list(visible_tests), timeout_s, root)
+            hidden, herr, htimed = self._run_pytest(root, list(hidden_tests), timeout_s, root)
             error = verr or herr
             return SandboxResult(applied=True, timed_out=vtimed or htimed, error=error,
                                  visible=visible, hidden=hidden)
 
     @staticmethod
-    def _scrubbed_env() -> dict[str, str]:
+    def _scrubbed_env(root: Path) -> dict[str, str]:
         # Minimal environment: no inherited API keys/secrets, no network hints.
         keep = {"PATH", "LANG", "LC_ALL", "LC_CTYPE", "TMPDIR", "SYSTEMROOT"}
         env = {k: v for k, v in os.environ.items() if k in keep}
         env["PYTHONDONTWRITEBYTECODE"] = "1"
+        env["HOME"] = str(root)  # avoid confusing errors from Path.home()/expanduser("~")
         return env
 
     def _run_pytest(self, root: Path, test_files: list[str],
-                    timeout_s: float) -> tuple[list[TestResult], str | None, bool]:
+                    timeout_s: float, sandbox_root: Path) -> tuple[list[TestResult], str | None, bool]:
         """Run pytest over `test_files` (relative to root). Returns
         (results, error, timed_out). No test files -> empty results, no error."""
         if not test_files:
             return [], None, False
         report = root / "_argus_report.xml"
+        report.unlink(missing_ok=True)  # prevent stale report from previous run bleeding through
         cmd = [sys.executable, "-m", "pytest", *test_files,
                "--junitxml", str(report), "-p", "no:cacheprovider", "-q"]
         try:
-            proc = subprocess.run(cmd, cwd=str(root), env=self._scrubbed_env(),
+            proc = subprocess.run(cmd, cwd=str(root), env=self._scrubbed_env(sandbox_root),
                                   capture_output=True, timeout=timeout_s)
         except subprocess.TimeoutExpired:
             return [], "timeout", True
