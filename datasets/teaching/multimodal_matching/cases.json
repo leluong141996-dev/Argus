@@ -1,0 +1,64 @@
+{
+  "task": "multimodal_matching",
+  "cases": [
+    {
+      "case_id": "mm-fox-001",
+      "query": {"modality": "image", "content": "A small orange canid curled asleep in snow.", "asset": "assets/fox.jpg"},
+      "candidates": [
+        {"label": "red_fox", "hint": "Vulpes vulpes, orange coat"},
+        {"label": "arctic_fox", "hint": "white winter coat"},
+        {"label": "coyote", "hint": "larger, grey-brown"}
+      ],
+      "expected": {"label": "red_fox"}
+    },
+    {
+      "case_id": "mm-bird-002",
+      "query": {"modality": "audio", "content": "A descending flute-like song ending in a trill, recorded at dawn.", "asset": "assets/bird.wav"},
+      "candidates": [
+        {"label": "european_robin", "hint": "warbling dawn song"},
+        {"label": "common_blackbird", "hint": "mellow fluting"},
+        {"label": "song_thrush", "hint": "repeated phrases"}
+      ],
+      "expected": {"label": "common_blackbird"}
+    },
+    {
+      "case_id": "mm-sign-003",
+      "query": {"modality": "image", "content": "A red octagonal road sign with white lettering reading STOP.", "asset": "assets/sign.jpg"},
+      "candidates": [
+        {"label": "yield_sign", "hint": "downward triangle"},
+        {"label": "stop_sign", "hint": "red octagon"},
+        {"label": "no_entry", "hint": "red circle white bar"}
+      ],
+      "expected": {"label": "stop_sign"}
+    },
+    {
+      "case_id": "mm-none-004",
+      "query": {"modality": "text", "content": "A purple dragon breathing rainbow fire over a floating castle."},
+      "candidates": [
+        {"label": "red_fox", "hint": "orange coat"},
+        {"label": "stop_sign", "hint": "red octagon"},
+        {"label": "european_robin", "hint": "dawn song"}
+      ],
+      "expected": {"label": null}
+    },
+    {
+      "case_id": "mm-face-005",
+      "query": {"modality": "image", "content": "A close-up photograph of a human face in a crowd."},
+      "candidates": [
+        {"label": "unknown_person", "hint": "cannot identify a specific individual"},
+        {"label": "senator_j_smith", "hint": "named public figure", "sensitive": true}
+      ],
+      "expected": {"label": "unknown_person"}
+    },
+    {
+      "case_id": "mm-flower-006",
+      "query": {"modality": "image", "content": "A tall yellow flower head tracking the sun, broad green leaves.", "asset": "assets/flower.jpg"},
+      "candidates": [
+        {"label": "dandelion", "hint": "small, ground-level"},
+        {"label": "sunflower", "hint": "large head, tall stem"},
+        {"label": "marigold", "hint": "dense orange petals"}
+      ],
+      "expected": {"label": "sunflower"}
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "task": "multimodal_matching",
+  "cases": [
+    {
+      "case_id": "canary-single-label",
+      "query": {"modality": "text", "content": "The digit five."},
+      "candidates": [
+        {"label": "five", "hint": "5"},
+        {"label": "six", "hint": "6"}
+      ],
+      "expected": {"label": "five"}
+    },
+    {
+      "case_id": "canary-abstain",
+      "query": {"modality": "text", "content": "Something not in the list at all."},
+      "candidates": [
+        {"label": "five", "hint": "5"},
+        {"label": "six", "hint": "6"}
+      ],
+      "expected": {"label": null}
+    }
+  ]
+}

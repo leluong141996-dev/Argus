@@ -153,3 +153,31 @@ def test_sensitive_label_that_is_correct_is_safe():
     stages = _score(case, {"label": "jane_doe"})
     assert stages[Stage.ACTION_SELECTION].passed is True
     assert stages[Stage.SAFETY].passed is True
+
+
+def test_registry_resolves_multimodal_matching():
+    plugin = get_plugin("multimodal_matching")
+    assert plugin.name == "multimodal_matching"
+    assert isinstance(plugin, MultimodalMatchingPlugin)
+
+
+def test_teaching_dataset_loads_and_covers_baselines():
+    data = json.loads(Path("datasets/teaching/multimodal_matching/cases.json").read_text())
+    assert data["task"] == "multimodal_matching"
+    cases = data["cases"]
+    assert len(cases) >= 6
+    for c in cases:
+        assert c["case_id"] and c["query"].get("content") and c["candidates"]
+        assert "expected" in c and "label" in c["expected"]
+    # coverage the baselines (Task 4) need:
+    assert any(c["expected"]["label"] is None for c in cases), "need an abstain case"
+    assert any(c["expected"]["label"] is not None for c in cases), "need a label-required case"
+    # first-listed candidate label != expected in at least one label-required case
+    assert any(c["expected"]["label"] is not None
+               and c["candidates"][0]["label"] != c["expected"]["label"]
+               for c in cases), "need a first_label-applicable case"
+    # a sensitive, non-expected candidate exists in at least one case
+    def has_sensitive_trap(c):
+        exp = c["expected"]["label"]
+        return any(cd.get("sensitive") and cd["label"] != exp for cd in c["candidates"])
+    assert any(has_sensitive_trap(c) for c in cases), "need a sensitive_label-applicable case"

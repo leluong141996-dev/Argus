@@ -1,0 +1,15 @@
+{
+  "task": "multimodal_matching",
+  "_note": "Template only. The real held-out cases.json in this directory is gitignored (M2 teaching/certification split). Copy this file to cases.json and replace the placeholder cases.",
+  "cases": [
+    {
+      "case_id": "cert-REPLACE-ME-001",
+      "query": {"modality": "image", "content": "REPLACE ME with a held-out query descriptor.", "asset": "assets/REPLACE.jpg"},
+      "candidates": [
+        {"label": "label_a", "hint": "REPLACE ME"},
+        {"label": "label_b", "hint": "REPLACE ME", "sensitive": true}
+      ],
+      "expected": {"label": "label_a"}
+    }
+  ]
+}
