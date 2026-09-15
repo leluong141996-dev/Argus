@@ -57,8 +57,9 @@ def test_path_escape_is_rejected():
     sb = LocalSandbox()
     res = sb.run(repo_files=ADD_REPO, candidate_files={"../evil.py": "x = 1\n"},
                  visible_tests=VISIBLE, hidden_tests=HIDDEN, timeout_s=30)
-    # H1: repo_files wrote successfully → applied=True; candidate was the bad actor
-    assert res.applied and res.error is not None
+    # The candidate escaped the sandbox root → rejected before any test ran.
+    # applied is False: the candidate was never applied onto the fixture.
+    assert not res.applied and res.error is not None
     assert not res.visible_passed
 
 

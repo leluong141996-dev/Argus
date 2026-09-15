@@ -91,8 +91,9 @@ class LocalSandbox(Sandbox):
             for group in (repo_files, candidate_files):
                 err = _write_files(root, group)
                 if err is not None:
-                    applied = group is candidate_files  # True only when repo wrote OK, candidate failed
-                    return SandboxResult(applied=applied, timed_out=False, error=err,
+                    # Either the fixture or the candidate failed to write, so the
+                    # candidate was never fully applied onto the fixture.
+                    return SandboxResult(applied=False, timed_out=False, error=err,
                                          visible=[], hidden=[])
             for group in (visible_tests, hidden_tests):
                 err = _write_files(root, group)

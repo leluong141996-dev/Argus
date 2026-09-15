@@ -4,6 +4,9 @@ dataset: datasets/teaching/agentic_coding/cases.json
 models:
   - openai/gpt-oss-120b
 provider:
+  # A real run executes model-produced code in the local sandbox (bounded by a
+  # temp dir, timeout, scrubbed env, and path-escape rejection, but NOT
+  # OS-isolated). Run untrusted model output in a disposable environment.
   name: mock                 # switch to "groq" for a real run
   params:
     temperature: 0
