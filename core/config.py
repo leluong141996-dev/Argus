@@ -21,6 +21,12 @@ class ProviderConfig:
 
 
 @dataclass
+class JudgeConfig:
+    provider: ProviderConfig
+    model: str
+
+
+@dataclass
 class ArgusConfig:
     task: str
     dataset: str
@@ -32,6 +38,7 @@ class ArgusConfig:
     cost_budget_usd: float | None = None
     latency_budget_ms: float | None = None
     run_id: str | None = None
+    judge: "JudgeConfig | None" = None
 
     def __post_init__(self) -> None:
         if not self.run_id:
@@ -72,6 +79,21 @@ def load_config(path: str) -> ArgusConfig:
     if not isinstance(models, list) or not models:
         raise ConfigError("config 'models' must be a non-empty list")
 
+    judge_raw = raw.get("judge")
+    judge = None
+    if judge_raw is not None:
+        if not isinstance(judge_raw, dict):
+            raise ConfigError("config 'judge' must be a mapping")
+        jprov = judge_raw.get("provider")
+        if not isinstance(jprov, dict) or "name" not in jprov:
+            raise ConfigError("config 'judge.provider' must be a mapping with a 'name'")
+        if not judge_raw.get("model"):
+            raise ConfigError("config 'judge' requires a 'model'")
+        judge = JudgeConfig(
+            provider=ProviderConfig(name=jprov["name"], params=jprov.get("params") or {}),
+            model=judge_raw["model"],
+        )
+
     return ArgusConfig(
         task=raw["task"],
         dataset=raw["dataset"],
@@ -83,4 +105,5 @@ def load_config(path: str) -> ArgusConfig:
         cost_budget_usd=raw.get("cost_budget_usd"),
         latency_budget_ms=raw.get("latency_budget_ms"),
         run_id=raw.get("run_id"),
+        judge=judge,
     )

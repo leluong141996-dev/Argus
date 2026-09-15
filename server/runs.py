@@ -10,6 +10,7 @@ from typing import Callable
 
 from core.config import ArgusConfig
 from core.dataset import load_cases
+from core.judge import LLMJudge
 from core.providers import as_model_call, build_provider
 from core.registry import get_plugin
 from core.record_schema import RowRecord
@@ -53,6 +54,13 @@ def execute_run(cfg: ArgusConfig, *, run_gate: bool,
             hooks.on_gate(report)
         if not report.passed:
             raise GateAborted(report)
+
+    # Real runs may grade intent with an LLM judge. Inject only after the gate
+    # has passed (the gate must stay deterministic) and only when the plugin
+    # exposes a judge seam -- deterministic plugins are untouched.
+    if cfg.judge is not None and getattr(plugin, "judge", None) is not None:
+        judge_provider = build_provider(cfg.judge.provider.name, cfg.judge.provider.params)
+        plugin.judge = LLMJudge(judge_provider, cfg.judge.model)
 
     provider = build_provider(cfg.provider.name, cfg.provider.params)
     model_calls = {m: as_model_call(provider, m) for m in cfg.models}
