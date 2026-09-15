@@ -27,23 +27,29 @@ export function NewRun() {
   }
 
   return (
-    <div>
+    <div className="card">
       <h2>New Run</h2>
-      {error && <p className="fail">{error}</p>}
-      <label>Config:{" "}
+      {error && <p className="error">{error}</p>}
+      <label className="field">
+        <span className="label">Config</span>
         <select value={selected} onChange={(e) => setSelected(e.target.value)}>
           {configs.map((c) => <option key={c.name} value={c.name}>{c.name} ({c.task})</option>)}
         </select>
       </label>
-      <p><label>Provider override:{" "}
+      <label className="field">
+        <span className="label">Provider override</span>
         <select value={provider} onChange={(e) => setProvider(e.target.value)}>
           <option value="">(from config)</option>
           <option value="mock">mock</option>
           <option value="groq">groq</option>
-        </select></label></p>
-      <p><label><input type="checkbox" checked={runGate}
-        onChange={(e) => setRunGate(e.target.checked)} /> run gate first</label></p>
-      <button onClick={run} disabled={!selected}>Run</button>
+        </select>
+      </label>
+      <label className="field check">
+        <input type="checkbox" checked={runGate}
+          onChange={(e) => setRunGate(e.target.checked)} />
+        run gate first
+      </label>
+      <button className="btn btn-primary" onClick={run} disabled={!selected}>Run</button>
     </div>
   );
 }

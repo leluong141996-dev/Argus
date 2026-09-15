@@ -1,9 +1,8 @@
 import { aggregate, orderedStages, WEIGHTLESS } from "../lib/aggregate";
 import type { RowRecord } from "../types";
-import "./dashboard.css";
 
 export function StageMatrix({ rows }: { rows: RowRecord[] }) {
-  if (!rows.length) return <p>No rows.</p>;
+  if (!rows.length) return <p className="empty">No rows.</p>;
   const groups = aggregate(rows);
   const stages = orderedStages(rows);
   return (

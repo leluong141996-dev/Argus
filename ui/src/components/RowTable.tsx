@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import type { RowRecord } from "../types";
-import "./dashboard.css";
 
 function Detail({ row }: { row: RowRecord }) {
   return (
@@ -18,7 +17,7 @@ function Detail({ row }: { row: RowRecord }) {
 
 export function RowTable({ rows }: { rows: RowRecord[] }) {
   const [open, setOpen] = useState<string | null>(null);
-  if (!rows.length) return <p>No rows.</p>;
+  if (!rows.length) return <p className="empty">No rows.</p>;
   return (
     <table className="rowtable">
       <thead>

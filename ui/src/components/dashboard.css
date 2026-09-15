@@ -1,7 +1,0 @@
-.matrix, .rowtable { border-collapse: collapse; width: 100%; font-size: 13px; }
-.matrix th, .matrix td, .rowtable th, .rowtable td { border: 1px solid #ddd; padding: 4px 8px; text-align: left; }
-.muted { opacity: 0.5; }
-.pass { color: #137333; } .fail { color: #a50e0e; }
-.rowtable tr.clickable { cursor: pointer; }
-.detail { background: #fafafa; font-family: monospace; white-space: pre-wrap; }
-.log { font-family: monospace; font-size: 12px; max-height: 320px; overflow-y: auto; }

@@ -20,16 +20,21 @@ export function Follow() {
 
   return (
     <div>
-      <h2>Run {id}</h2>
-      <p>Status: <b>{status}</b> — {done}/{total || "?"}</p>
-      {status === "running" &&
-        <button onClick={() => api.cancelRun(id).catch(() => {})}>Cancel</button>}
-      <h3>Progress</h3>
-      <ProgressLog events={events} />
-      {rows.length > 0 && <>
+      <div className="card">
+        <h2>Run {id}</h2>
+        <p className="meta">
+          <span className={`badge badge-${status}`}>{status}</span>
+          {" "}— {done}/{total || "?"}
+        </p>
+        {status === "running" &&
+          <button className="btn btn-danger" onClick={() => api.cancelRun(id).catch(() => {})}>Cancel</button>}
+        <h3>Progress</h3>
+        <ProgressLog events={events} />
+      </div>
+      {rows.length > 0 && <div className="card">
         <h3>Stage matrix</h3><StageMatrix rows={rows} />
         <h3>Rows</h3><RowTable rows={rows} />
-      </>}
+      </div>}
     </div>
   );
 }

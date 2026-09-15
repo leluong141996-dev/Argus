@@ -1,0 +1,58 @@
+/* Design tokens — the single source of color, spacing, type, radius.
+   Override under prefers-color-scheme: dark; markup never changes. */
+:root {
+  /* color — light */
+  --bg: #f7f8fa;
+  --surface: #ffffff;
+  --surface-alt: #fafafa;
+  --fg: #1a1d21;
+  --fg-muted: #5b636e;
+  --border: #e2e5ea;
+  --accent: #2b5cff;
+  --accent-fg: #ffffff;
+  --pass: #137333;
+  --fail: #a50e0e;
+  --danger: #c5221f;
+  --danger-fg: #ffffff;
+
+  /* spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* radius */
+  --radius: 8px;
+  --radius-sm: 5px;
+
+  /* type */
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --fs-sm: 13px;
+  --fs-base: 14px;
+  --fs-lg: 18px;
+  --fs-xl: 22px;
+
+  /* elevation */
+  --shadow: 0 1px 2px rgba(16, 22, 30, 0.06), 0 1px 3px rgba(16, 22, 30, 0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171c;
+    --surface: #1b1f26;
+    --surface-alt: #22272f;
+    --fg: #e7eaee;
+    --fg-muted: #99a2ad;
+    --border: #2c333c;
+    --accent: #6b8cff;
+    --accent-fg: #0e1116;
+    --pass: #4ec27a;
+    --fail: #f37272;
+    --danger: #e05753;
+    --danger-fg: #0e1116;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+}

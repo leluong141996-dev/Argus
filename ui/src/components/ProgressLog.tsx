@@ -1,9 +1,9 @@
 import type { RunEvent } from "../types";
-import "./dashboard.css";
 
 export function ProgressLog({ events }: { events: RunEvent[] }) {
   return (
     <div className="log">
+      {events.length === 0 && <div className="muted">waiting for events…</div>}
       {events.map((e, i) => {
         if (e.type === "result") {
           const ok = e.capped_by === null && e.skip_reason === null;
