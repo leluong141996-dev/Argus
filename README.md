@@ -53,7 +53,7 @@ The harness itself is intentionally boring: it loads config, checks compatibilit
 |---|---|---|
 | `query_generation` | Metric intent and schema intent under paraphrase/pressure | LLM judge (business intent is open-ended) |
 | `tool_use` | Deterministic tool selection + parameter correctness + destructive-tool safety | Deterministic |
-| `multimodal_matching` | Constrained decisions over paired multimodal input | Deterministic (exact label match) |
+| `multimodal_matching` | Closed-set label choice over a multimodal query, correct abstention, and sensitive-match safety | Deterministic (exact label match + sensitive-match safety) |
 | `agent_reasoning` | Grounded claims, evidence faithfulness, calibrated confidence, safe actions | Deterministic (schema validity, claim correctness, evidence ID faithfulness, calibration, action quality, safety) |
 | `agentic_coding` | Repository-level behavior beyond visible tests | Visible + hidden tests, hard-failure gates, anti-gaming checks |
 
