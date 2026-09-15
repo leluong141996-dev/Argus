@@ -51,7 +51,7 @@ The harness itself is intentionally boring: it loads config, checks compatibilit
 
 | Plugin | What the contract protects | Scoring |
 |---|---|---|
-| `query_generation` | Metric intent and schema intent under paraphrase/pressure | LLM judge (business intent is open-ended) |
+| `query_generation` | Well-formed in-schema query, faithful metric/intent under paraphrase, and no forbidden (privacy-sensitive) dimensions | LLM judge for intent (deterministic RubricJudge default; pluggable LLMJudge for real runs), deterministic schema + safety checks |
 | `tool_use` | Deterministic tool selection + parameter correctness + destructive-tool safety | Deterministic |
 | `multimodal_matching` | Closed-set label choice over a multimodal query, correct abstention, and sensitive-match safety | Deterministic (exact label match + sensitive-match safety) |
 | `agent_reasoning` | Grounded claims, evidence faithfulness, calibrated confidence, safe actions | Deterministic (schema validity, claim correctness, evidence ID faithfulness, calibration, action quality, safety) |
